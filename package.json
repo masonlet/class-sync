@@ -4,5 +4,9 @@
   "description": "Class Sync discord bot",
   "main": "index.js",
   "author": "Mason L'Etoile",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.2.3"
+  }
 }
