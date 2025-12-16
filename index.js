@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 const client = new Client({
   intents: [
@@ -8,9 +8,37 @@ const client = new Client({
   ]
 });
 
-client.once('clientReady', () => {
+const commands = [
+  new SlashCommandBuilder() 
+    .setName('status')
+    .setDescription('Check if bot is working')
+].map(command => command.toJSON());
+
+const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
+
+client.once('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
+
+  try {
+    console.log('Registering slash commands');
+
+    const route = process.env.GUILD_ID
+      ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
+      : Routes.applicationCommands(client.user.id);
+    await rest.put(route, { body: commands });
+  } catch (error) {
+    console.error('Error registering commands: ', error);
+  }
 });
+
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if(interaction.commandName === 'status') {
+    await interaction.reply('Bot is working');
+  }
+});
+
 
 client.login(process.env.DISCORD_TOKEN);
   
