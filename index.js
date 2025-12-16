@@ -16,6 +16,12 @@ const commands = [
 
 const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
 
+function hasPermission(interaction) {
+  const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
+  const hasAdmin = interaction.member.permissions.has('Administrator');
+  return hasHelper || hasAdmin;
+}
+
 client.once('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
