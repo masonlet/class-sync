@@ -54,7 +54,18 @@ const commands = [
     .addStringOption(option =>
       option.setName('date')
         .setDescription('Due date (e.g., "12/22/25 11:59 PM", "Dec 22 at 11:59pm")')
-        .setRequired(true))
+        .setRequired(true)),
+  new SlashCommandBuilder()
+    .setName('list-deadlines')
+    .setDescription('List all stored deadlines')
+    .addStringOption(option =>
+      option.setName('course')
+        .setDescription('Filter by course (optional)')
+        .setRequired(false))
+    .addRoleOption(option =>
+      option.setName('cohort')
+        .setDescription('Filter by cohort (optional)')
+        .setRequired(false))
 ].map(command => command.toJSON());
 
 const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
@@ -112,13 +123,38 @@ client.on('interactionCreate', async interaction => {
       cohortName: cohort.name,
       assignment: assignment,
       dueDate: parsedDate.toISOString(),
-      createdAt: new Date.toISOString()
+      createdAt: new Date().toISOString()
     }
 
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
 
     await interaction.reply(`Deadline added: ${assignment} for ${course} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
+  }
+
+  if(interaction.commandName === 'list-deadlines') {
+    const courseFilter = interaction.options.getString('course');
+    const cohortFilter = interaction.options.getRole('cohort');
+
+    let deadlines = loadDeadlines();
+
+    if(courseFilter) {
+      deadlines = deadlines.filter(d => d.course.toLowerCase().includes(courseFilter.toLowerCase()));
+    }
+    if(cohortFilter) {
+      deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
+    }
+
+    if(deadlines.length === 0) {
+      await interaction.reply('No deadlines found.');
+      return;
+    }
+
+    const response = deadlines.map(d =>
+      `**${d.assignment}** - ${d.course} (${d.cohortName}) - Due: ${new Date(d.dueDate).toLocaleString()}`
+    ).join('\n');
+
+    await interaction.reply(`**Stored Deadlines:**\n${response}`);
   }
 });
 
