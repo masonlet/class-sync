@@ -1,6 +1,29 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
 const chrono = require('chrono-node');
+const fs = require('fs');
+
+const DEADLINES_FILE = './deadlines.json';
+
+function loadDeadlines() {
+  try {
+    if(fs.existsSync(DEADLINES_FILE)) {
+      const data = fs.readFileSync(DEADLINES_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch(error) {
+    console.error('Error loading deadlines:', error);
+  }
+  return []
+}
+
+function saveDeadlines(deadlines) {
+  try {
+    fs.writeFileSync(DEADLINES_FILE, JSON.stringify(deadlines, null, 2));
+  } catch(error) {
+    console.error('Error saving deadlines:', error);
+  }
+}
 
 const client = new Client({
   intents: [
@@ -80,6 +103,20 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply({content: 'Invalid date format.', ephemeral: true});
       return;
     }
+
+    const deadlines = loadDeadlines();
+    const newDeadline = {
+      id: Date.now().toString(),
+      course: course,
+      cohortId: cohort.id,
+      cohortName: cohort.name,
+      assignment: assignment,
+      dueDate: parsedDate.toISOString(),
+      createdAt: new Date.toISOString()
+    }
+
+    deadlines.push(newDeadline);
+    saveDeadlines(deadlines);
 
     await interaction.reply(`Deadline added: ${assignment} for ${course} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
   }
