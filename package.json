@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "Class Sync discord bot",
   "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
   "author": "Mason L'Etoile",
   "license": "MIT",
   "dependencies": {

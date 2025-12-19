@@ -1,36 +1,12 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const chrono = require('chrono-node');
-const fs = require('fs');
+const { loadDeadlines, saveDeadlines } = require('./storage');
 
-const DEADLINES_FILE = './deadlines.json';
-
-function loadDeadlines() {
-  try {
-    if(fs.existsSync(DEADLINES_FILE)) {
-      const data = fs.readFileSync(DEADLINES_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch(error) {
-    console.error('Error loading deadlines:', error);
-  }
-  return []
+function hasPermission(interaction) {
+  const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
+  const hasAdmin = interaction.member.permissions.has('Administrator');
+  return hasHelper || hasAdmin;
 }
-
-function saveDeadlines(deadlines) {
-  try {
-    fs.writeFileSync(DEADLINES_FILE, JSON.stringify(deadlines, null, 2));
-  } catch(error) {
-    console.error('Error saving deadlines:', error);
-  }
-}
-
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages
-  ]
-});
 
 const commands = [
   new SlashCommandBuilder() 
@@ -68,32 +44,7 @@ const commands = [
         .setRequired(false))
 ].map(command => command.toJSON());
 
-const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
-
-function hasPermission(interaction) {
-  const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
-  const hasAdmin = interaction.member.permissions.has('Administrator');
-  return hasHelper || hasAdmin;
-}
-
-client.once('clientReady', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-
-  try {
-    console.log('Registering slash commands');
-
-    const route = process.env.GUILD_ID
-      ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
-      : Routes.applicationCommands(client.user.id);
-    await rest.put(route, { body: commands });
-  } catch (error) {
-    console.error('Error registering commands: ', error);
-  }
-});
-
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
+async function handleCommand(interaction) {
   if(interaction.commandName === 'status') {
     await interaction.reply('Bot is working');
   }
@@ -156,8 +107,6 @@ client.on('interactionCreate', async interaction => {
 
     await interaction.reply(`**Stored Deadlines:**\n${response}`);
   }
-});
+}
 
-
-client.login(process.env.DISCORD_TOKEN);
-  
+module.exports = { commands, handleCommand };
