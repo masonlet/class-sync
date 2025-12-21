@@ -1,6 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
 const { loadDeadlines, saveDeadlines } = require('./storage');
+const { resolveChannel, isForumChannel, isTextChannel } = require('./channels');
 
 function hasPermission(interaction) {
   const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
@@ -51,25 +52,49 @@ async function handleCommand(interaction) {
 
   if(interaction.commandName === 'add-deadline') {
     if(!hasPermission(interaction)) {
-      await interaction.reply({content: `You need the ${process.env.HELPER_ROLE_NAME} role or Administrator permissions to use this command.`, ephemeral: true});
+      await interaction.reply({
+        content: `You need the ${process.env.HELPER_ROLE_NAME} role or Administrator permissions to use this command.`, 
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
 
-    const course = interaction.options.getString('course');
+    const courseInput = interaction.options.getString('course');
+    const channel = resolveChannel(interaction.guild, courseInput);
+
+    if (channel === "DUPLICATE") {
+      await interaction.reply({
+        content: `⚠️ Multiple channels match "**${courseInput}**". Please be more specific (e.g., use the full name or mention the channel with #).`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+    if (!channel) {
+      await interaction.reply({
+        content: 'Could not find a channel matching that course identifier.', 
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
     const cohort = interaction.options.getRole('cohort');
     const assignment = interaction.options.getString('assignment');
     const dateInput = interaction.options.getString('date');
-
     const parsedDate = chrono.parseDate(dateInput);
+
     if(!parsedDate){
-      await interaction.reply({content: 'Invalid date format.', ephemeral: true});
+      await interaction.reply({
+        content: 'Invalid date format.', 
+        flags: MessageFlags.Ephemeral
+      });
       return;
     }
 
     const deadlines = loadDeadlines();
     const newDeadline = {
       id: Date.now().toString(),
-      course: course,
+      courseChannelId: channel.id,
+      courseChannelName: channel.name,
       cohortId: cohort.id,
       cohortName: cohort.name,
       assignment: assignment,
@@ -80,7 +105,7 @@ async function handleCommand(interaction) {
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
 
-    await interaction.reply(`Deadline added: ${assignment} for ${course} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
+    await interaction.reply(`Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
   }
 
   if(interaction.commandName === 'list-deadlines') {
@@ -90,7 +115,17 @@ async function handleCommand(interaction) {
     let deadlines = loadDeadlines();
 
     if(courseFilter) {
-      deadlines = deadlines.filter(d => d.course.toLowerCase().includes(courseFilter.toLowerCase()));
+      const channel = resolveChannel(interaction.guild, courseFilter);
+      if (channel === "DUPLICATE") {
+        await interaction.reply({
+          content: "Multiple channels match your filter. Please be more specific.",
+          flags: MessageFlags.Ephemeral
+        });
+        return;
+      }
+      if (channel) {
+        deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
+      }
     }
     if(cohortFilter) {
       deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
@@ -102,7 +137,7 @@ async function handleCommand(interaction) {
     }
 
     const response = deadlines.map(d =>
-      `**${d.assignment}** - ${d.course} (${d.cohortName}) - Due: ${new Date(d.dueDate).toLocaleString()}`
+      `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${new Date(d.dueDate).toLocaleString()}`
     ).join('\n');
 
     await interaction.reply(`**Stored Deadlines:**\n${response}`);
