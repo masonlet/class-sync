@@ -19,30 +19,54 @@ const commands = [
     .addStringOption(option =>
       option.setName('course')
         .setDescription('Course name, code, channel, or forum.')
-        .setRequired(true))
+        .setRequired(true)
+    )
     .addRoleOption(option =>
       option.setName('cohort')
         .setDescription('Cohort role (e.g., @class-a)')
-        .setRequired(true))
+        .setRequired(true)
+    )
     .addStringOption(option =>
       option.setName('assignment')
         .setDescription('Assignment name')
-        .setRequired(true))
+        .setRequired(true)
+    )
     .addStringOption(option =>
       option.setName('date')
         .setDescription('Due date (e.g., "12/22/25 11:59 PM", "Dec 22 at 11:59pm")')
-        .setRequired(true)),
+        .setRequired(true)
+    ),
+  new SlashCommandBuilder()
+    .setName('remove-deadline')
+    .setDescription('Remove a course deadline')
+    .addStringOption(option =>
+      option.setName('course')
+        .setDescription('Course name, code, channel, or forum.')
+        .setRequired(true)
+    )
+    .addRoleOption(option =>
+      option.setName('cohort')
+        .setDescription('Cohort role (e.g., @class-a)')
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName('assignment')
+        .setDescription('Assignment name')
+        .setRequired(true)
+    ),
   new SlashCommandBuilder()
     .setName('list-deadlines')
     .setDescription('List all stored deadlines')
     .addStringOption(option =>
       option.setName('course')
         .setDescription('Filter by course (optional)')
-        .setRequired(false))
+        .setRequired(false)
+    )
     .addRoleOption(option =>
       option.setName('cohort')
         .setDescription('Filter by cohort (optional)')
-        .setRequired(false))
+        .setRequired(false)
+    )
 ].map(command => command.toJSON());
 
 async function handleCommand(interaction) {
@@ -106,6 +130,55 @@ async function handleCommand(interaction) {
     saveDeadlines(deadlines);
 
     await interaction.reply(`Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
+  }
+
+  if(interaction.commandName === 'remove-deadline') {
+    if(!hasPermission(interaction)) {
+      await interaction.reply({
+        content: `You need the ${process.env.HELPER_ROLE_NAME} role or Administrator permissions to use this command.`, 
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    const courseInput = interaction.options.getString('course');
+    const channel = resolveChannel(interaction.guild, courseInput);
+
+    if (channel === "DUPLICATE") {
+      await interaction.reply({
+        content: `⚠️ Multiple channels match "**${courseInput}**". Please be more specific (e.g., use the full name or mention the channel with #).`,
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+    if (!channel) {
+      await interaction.reply({
+        content: 'Could not find a channel matching that course identifier.', 
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    const cohort = interaction.options.getRole('cohort');
+    const assignment = interaction.options.getString('assignment');
+
+    const deadlines = loadDeadlines();
+    const filteredDeadlines = deadlines.filter(d => 
+      !(d.courseChannelId === channel.id && 
+        d.cohortId === cohort.id && 
+        d.assignment === assignment)
+    );
+
+    if (deadlines.length === filteredDeadlines.length) {
+      await interaction.reply({
+        content: 'No matching deadline found.',
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
+    saveDeadlines(filteredDeadlines);
+    await interaction.reply(`Deadline removed: ${assignment} for ${channel.name} (${cohort.name})`);
   }
 
   if(interaction.commandName === 'list-deadlines') {
