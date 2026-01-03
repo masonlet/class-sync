@@ -1,5 +1,7 @@
 const { ChannelType } = require('discord.js');
 const { isForumChannel, isTextChannel } = require('./channels');
+const { loadDeadlines } = require('./deadlineStorage');
+const { loadMessages, saveMessages } = require('./messageStorage');
 
 async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   if (isForumChannel(courseChannel)) {
@@ -9,8 +11,13 @@ async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
     if (!dueDatesThread) {
       dueDatesThread = await courseChannel.threads.create({
         name: 'Due Dates',
-        message: { content: 'This thread tracks upcoming deadlines.' }
+        message: { content: '**Upcoming Deadlines:**\n\nNo deadlines.' }
       });
+
+      const messages = loadMessages();
+      const starterMessage = await dueDatesThread.fetchStarterMessage();
+      messages[dueDatesThread.id] = starterMessage.id;
+      saveMessages(messages);
     }
 
     return dueDatesThread.id;
@@ -41,24 +48,51 @@ async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   return null;
 }
 
-async function postDeadlineMessage(guild, reminderLocationId, deadline) {
+async function updateDeadlineMessage(guild, reminderLocationId) {
   try {
     const channel = await guild.channels.fetch(reminderLocationId);
-
     if (!channel) {
       console.error('Could not find reminder location channel');
       return false;
     }
 
-    const dueDate = new Date(deadline.dueDate);
-    const message = `**${deadline.assignment}** is due on ${dueDate.toLocaleString()}`;
+    const messages = loadMessages();
+    const deadlines = loadDeadlines().filter(d => d.reminderLocationId === reminderLocationId);
 
-    await channel.send(message);
+    let content = '**Upcoming Deadlines:**\n\n';
+    if (deadlines.length === 0) {
+      content += 'No deadlines.';
+    } else {
+      deadlines.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      content += deadlines.map(d => {
+        const dueDate = new Date(d.dueDate);
+        return `- **${d.assignment}** - ${d.courseChannelName} - Due: ${dueDate.toLocaleString()}`;
+      }).join('\n');
+    }
+
+    const existingMessageId = messages[reminderLocationId];
+    if (existingMessageId) {
+      try {
+        const message = await channel.messages.fetch(existingMessageId);
+        await message.edit(content);
+      } catch (error) {
+        const newMessage = await channel.send(content);
+        await newMessage.pin();
+        messages[reminderLocationId] = newMessage.id;
+        saveMessages(messages);
+      }
+    } else {
+      const newMessage = await channel.send(content);
+      await newMessage.pin();
+      messages[reminderLocationId] = newMessage.id;
+      saveMessages(messages);
+    }
+
     return true;
   } catch (error) {
-    console.error('Failed to post deadline message:', error.message);
+    console.error('Failed to update deadline message:', error.message);
     return false;
   }
 }
 
-module.exports = { getOrCreateReminderLocation, postDeadlineMessage };
+module.exports = { getOrCreateReminderLocation, updateDeadlineMessage };

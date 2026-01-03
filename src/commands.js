@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
-const { loadDeadlines, saveDeadlines } = require('./storage');
+const { loadDeadlines, saveDeadlines } = require('./deadlineStorage');
 const { resolveChannel, isForumChannel, isTextChannel } = require('./channels');
-const { getOrCreateReminderLocation, postDeadlineMessage } = require('./reminders');
+const { getOrCreateReminderLocation, updateDeadlineMessage } = require('./reminders');
 
 function hasPermission(interaction) {
   const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
@@ -145,7 +145,7 @@ async function handleCommand(interaction) {
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
 
-    await postDeadlineMessage(interaction.guild, reminderLocationId, newDeadline);
+    await updateDeadlineMessage(interaction.guild, reminderLocationId);
     await interaction.reply(`Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
   }
 
@@ -160,17 +160,17 @@ async function handleCommand(interaction) {
 
     const courseInput = interaction.options.getString('course');
     const channel = resolveChannel(interaction.guild, courseInput);
-
-    if (channel === "DUPLICATE") {
+    if (!channel) {
       await interaction.reply({
-        content: `⚠️ Multiple channels match "**${courseInput}**". Please be more specific (e.g., use the full name or mention the channel with #).`,
+        content: 'Could not find a channel matching that course identifier.', 
         flags: MessageFlags.Ephemeral
       });
       return;
     }
-    if (!channel) {
+
+    if (channel === "DUPLICATE") {
       await interaction.reply({
-        content: 'Could not find a channel matching that course identifier.', 
+        content: `⚠️ Multiple channels match "**${courseInput}**". Please be more specific (e.g., use the full name or mention the channel with #).`,
         flags: MessageFlags.Ephemeral
       });
       return;
@@ -180,13 +180,13 @@ async function handleCommand(interaction) {
     const assignment = interaction.options.getString('assignment');
 
     const deadlines = loadDeadlines();
-    const filteredDeadlines = deadlines.filter(d => 
-      !(d.courseChannelId === channel.id && 
-        d.cohortId === cohort.id && 
-        d.assignment === assignment)
+    const deadline = deadlines.find(d =>
+      d.courseChannelId === channel.id &&
+      d.cohortId === cohort.id &&
+      d.assignment === assignment
     );
 
-    if (deadlines.length === filteredDeadlines.length) {
+    if (!deadline) {
       await interaction.reply({
         content: 'No matching deadline found.',
         flags: MessageFlags.Ephemeral
@@ -194,7 +194,10 @@ async function handleCommand(interaction) {
       return;
     }
 
+    const filteredDeadlines = deadlines.filter(d => d.id !== deadline.id);
     saveDeadlines(filteredDeadlines);
+
+    await updateDeadlineMessage(interaction.guild, deadline.reminderLocationId);
     await interaction.reply(`Deadline removed: ${assignment} for ${channel.name} (${cohort.name})`);
   }
 

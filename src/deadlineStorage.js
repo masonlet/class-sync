@@ -8,7 +8,7 @@ function loadDeadlines() {
       const data = fs.readFileSync(DEADLINES_FILE, 'utf8');
       return JSON.parse(data);
     }
-  } catch(error) {
+  } catch (error) {
     console.error('Error loading deadlines:', error);
   }
   return []
