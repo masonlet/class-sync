@@ -41,4 +41,24 @@ async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   return null;
 }
 
-module.exports = { getOrCreateReminderLocation };
+async function postDeadlineMessage(guild, reminderLocationId, deadline) {
+  try {
+    const channel = await guild.channels.fetch(reminderLocationId);
+
+    if (!channel) {
+      console.error('Could not find reminder location channel');
+      return false;
+    }
+
+    const dueDate = new Date(deadline.dueDate);
+    const message = `**${deadline.assignment}** is due on ${dueDate.toLocaleString()}`;
+
+    await channel.send(message);
+    return true;
+  } catch (error) {
+    console.error('Failed to post deadline message:', error.message);
+    return false;
+  }
+}
+
+module.exports = { getOrCreateReminderLocation, postDeadlineMessage };

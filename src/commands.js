@@ -2,7 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
 const { loadDeadlines, saveDeadlines } = require('./storage');
 const { resolveChannel, isForumChannel, isTextChannel } = require('./channels');
-const { getOrCreateReminderLocation } = require('./reminders');
+const { getOrCreateReminderLocation, postDeadlineMessage } = require('./reminders');
 
 function hasPermission(interaction) {
   const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
@@ -145,6 +145,7 @@ async function handleCommand(interaction) {
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
 
+    await postDeadlineMessage(interaction.guild, reminderLocationId, newDeadline);
     await interaction.reply(`Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
   }
 
