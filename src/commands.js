@@ -2,6 +2,7 @@ const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const chrono = require('chrono-node');
 const { loadDeadlines, saveDeadlines } = require('./storage');
 const { resolveChannel, isForumChannel, isTextChannel } = require('./channels');
+const { getOrCreateReminderLocation } = require('./reminders');
 
 function hasPermission(interaction) {
   const hasHelper = interaction.member.roles.cache.some(role => role.name === process.env.HELPER_ROLE_NAME);
@@ -114,6 +115,20 @@ async function handleCommand(interaction) {
       return;
     }
 
+    const reminderLocationId = await getOrCreateReminderLocation(
+      interaction.guild,
+      channel,
+      cohort.name
+    );
+
+    if (!reminderLocationId) {
+      await interaction.reply({
+        content: 'Could not create reminder location. The bot may be missing "Manage Channels" permission.',
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
+
     const deadlines = loadDeadlines();
     const newDeadline = {
       id: Date.now().toString(),
@@ -123,7 +138,8 @@ async function handleCommand(interaction) {
       cohortName: cohort.name,
       assignment: assignment,
       dueDate: parsedDate.toISOString(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      reminderLocationId: reminderLocationId
     }
 
     deadlines.push(newDeadline);
