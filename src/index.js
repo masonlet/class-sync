@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes, Events } = require('discord.js');
 const { commands, handleCommand } = require('./commands');
 
 const client = new Client({
@@ -11,7 +11,7 @@ const client = new Client({
 
 const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
 
-client.once('clientReady', async () => {
+client.once(Events.ClientReady, async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
   try {
@@ -20,13 +20,14 @@ client.once('clientReady', async () => {
     const route = process.env.GUILD_ID
       ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
       : Routes.applicationCommands(client.user.id);
+
     await rest.put(route, { body: commands });
   } catch (error) {
-    console.error('Error registering commands: ', error);
+    console.error('Error registering commands:', error);
   }
 });
 
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
   await handleCommand(interaction);
 });
