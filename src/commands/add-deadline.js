@@ -1,9 +1,10 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const chrono = require('chrono-node');
 const { loadDeadlines, saveDeadlines } = require('../deadlineStorage');
 const { resolveChannel } = require('../channels');
 const { getOrCreateReminderLocation, updateDeadlineMessage } = require('../reminders');
-const { hasPermission, denyPermission } = require('../utils/commandHelpers');
+const { hasPermission, denyPermission } = require('../utils/permissions');
+const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 
 module.exports = {
   name: 'add-deadline',
@@ -33,27 +34,23 @@ module.exports = {
     .toJSON(),
 
   async handle(interaction) {
-    if(!hasPermission(interaction)) return denyPermission(interaction);
+    await deferEphemeral(interaction);
 
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    if(!hasPermission(interaction)) 
+      return denyPermission(interaction);
 
     const courseInput = interaction.options.getString('course');
     const channel = resolveChannel(interaction.guild, courseInput);
-    if (!channel || channel === "DUPLICATE") {
-      const msg = channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.";
-      return interaction.editReply({ content: msg });
-    }
+    if (!channel || channel === "DUPLICATE") 
+      return replyEphemeral(interaction, channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.");
     
     const cohort = interaction.options.getRole('cohort');
     const assignment = interaction.options.getString('assignment');
     const dateInput = interaction.options.getString('date');
     const parsedDate = chrono.parseDate(dateInput);
 
-    if (!parsedDate) { 
-      return interaction.editReply({
-        content: 'Invalid date format.'
-      });
-    }
+    if (!parsedDate) 
+      return replyEphemeral(interaction, 'Invalid date format.');
 
     const reminderLocationId = await getOrCreateReminderLocation(
       interaction.guild,
@@ -61,11 +58,8 @@ module.exports = {
       cohort.name
     );
 
-    if (!reminderLocationId) {
-      return interaction.editReply({
-        content: 'Could not create reminder location. The bot may be missing "Manage Channels" permission.'
-      });
-    }
+    if (!reminderLocationId) 
+      return replyEphemeral(interaction, 'Could not create reminder location. The bot may be missing "Manage Channels" permission.');
 
     const deadlines = loadDeadlines();
     const newDeadline = {
@@ -82,9 +76,8 @@ module.exports = {
 
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
-
     await updateDeadlineMessage(interaction.guild, reminderLocationId);
-    await interaction.editReply(`Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
 
+    return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
   }
 }

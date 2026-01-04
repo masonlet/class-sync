@@ -1,8 +1,9 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { loadDeadlines, saveDeadlines } = require('../deadlineStorage');
 const { resolveChannel } = require('../channels');
 const { updateDeadlineMessage } = require('../reminders');
-const { hasPermission, denyPermission } = require('../utils/commandHelpers');
+const { hasPermission, denyPermission } = require('../utils/permissions');
+const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 
 module.exports = {
   name: 'remove-deadline',
@@ -27,16 +28,15 @@ module.exports = {
     .toJSON(),
 
   async handle(interaction) {
-    if(!hasPermission(interaction)) return denyPermission(interaction);
+    await deferEphemeral(interaction); 
 
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    if(!hasPermission(interaction)) 
+      return denyPermission(interaction);
 
     const courseInput = interaction.options.getString('course');
     const channel = resolveChannel(interaction.guild, courseInput);
-    if (!channel || channel === "DUPLICATE") {
-      const msg = channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.";
-      return interaction.editReply({ content: msg });
-    }
+    if (!channel || channel === "DUPLICATE") 
+      return replyEphemeral(interaction, channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.");
 
     const cohort = interaction.options.getRole('cohort');
     const assignment = interaction.options.getString('assignment');
@@ -48,12 +48,13 @@ module.exports = {
       d.assignment === assignment
     );
 
-    if (!deadline) return interaction.editReply({ content: 'No matching deadline found.' });
+    if (!deadline)  
+      return replyEphemeral(interaction, 'No matching deadline found.');
 
     const filteredDeadlines = deadlines.filter(d => d.id !== deadline.id);
     saveDeadlines(filteredDeadlines);
 
     await updateDeadlineMessage(interaction.guild, deadline.reminderLocationId);
-    await interaction.editReply(`Deadline removed: ${assignment} for ${channel.name} (${cohort.name})`);
+    return replyEphemeral(interaction, `Deadline removed: ${assignment} for ${channel.name} (${cohort.name})`);
   }
 }

@@ -1,6 +1,7 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 const { loadDeadlines } = require('../deadlineStorage');
 const { resolveChannel } = require('../channels');
+const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 
 module.exports = {
   name: 'list-deadlines',
@@ -20,7 +21,7 @@ module.exports = {
     .toJSON(),
 
   async handle(interaction) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await deferEphemeral(interaction);    
 
     const courseFilter = interaction.options.getString('course');
     const cohortFilter = interaction.options.getRole('cohort');
@@ -29,26 +30,23 @@ module.exports = {
 
     if(courseFilter) {
       const channel = resolveChannel(interaction.guild, courseFilter);
-      if (channel === "DUPLICATE") {
-        return interaction.editReply({ content: "Multiple channels match your filter. Please be more specific." });
-      }
 
-      if (channel) {
+      if (channel === "DUPLICATE")   
+        return replyEphemeral(interaction, "Multiple channels match your filter. Please be more specific.");
+
+      if (channel) 
         deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
-      }
     }
-    if(cohortFilter) {
+    if(cohortFilter) 
       deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
-    }
 
-    if(deadlines.length === 0) {
-      return interaction.editReply('No deadlines found.');
-    }
+    if(deadlines.length === 0) 
+      return replyEphemeral(interaction, 'No deadlines found.');
 
     const response = deadlines.map(d =>
       `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${new Date(d.dueDate).toLocaleString()}`
     ).join('\n');
 
-    await interaction.editReply(`**Stored Deadlines:**\n${response}`);
+    return replyEphemeral(interaction, `**Stored Deadlines:**\n${response}`);
   }
 };

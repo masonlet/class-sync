@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
+const { replyEphemeral } = require('../utils/interactions');
 
 module.exports = {
   name: 'status',
@@ -8,6 +9,6 @@ module.exports = {
     .toJSON(),
 
   async handle(interaction) {
-    await interaction.reply({ content: 'Bot is working', flags: MessageFlags.Ephemeral });
+    return replyEphemeral(interaction, 'Bot is working');
   }
 };
