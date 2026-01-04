@@ -1,35 +1,24 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, REST, Routes, Events } = require('discord.js');
-const { commands, handleCommand } = require('./commands');
+const { Client, GatewayIntentBits, Events, Collection } = require('discord.js');
+const { loadCommands, registerCommands } = require('./handlers/commandHandler');
+const { setupInteractionHandler } = require('./handlers/eventHandler');
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages
-  ]
-});
 
-const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
+client.commands = new Collection();
+
+const commandData = loadCommands(client);
+setupInteractionHandler(client);
 
 client.once(Events.ClientReady, async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
   try {
     console.log('Registering slash commands');
-
-    const route = process.env.GUILD_ID
-      ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
-      : Routes.applicationCommands(client.user.id);
-
-    await rest.put(route, { body: commands });
+    await registerCommands(client, commandData);
   } catch (error) {
     console.error('Error registering commands:', error);
   }
-});
-
-client.on(Events.InteractionCreate, async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-  await handleCommand(interaction);
 });
 
 client.login(process.env.DISCORD_TOKEN);
