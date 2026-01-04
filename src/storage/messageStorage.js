@@ -1,6 +1,7 @@
 const fs = require('fs');
+const path = require('path');
 
-const MESSAGES_FILE = './messages.json';
+const MESSAGES_FILE = path.join(__dirname, '../../messages.json');
 
 function loadMessages() {
   try {

@@ -1,6 +1,7 @@
 const fs = require('fs');
+const path = require('path');
 
-const DEADLINES_FILE = './deadlines.json';
+const DEADLINES_FILE = path.join(__dirname, '../../deadlines.json');
 
 function loadDeadlines() {
   try {
