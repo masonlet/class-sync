@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const chrono = require('chrono-node');
-const { loadDeadlines, saveDeadlines } = require('../deadlineStorage');
-const { resolveChannel } = require('../channels');
-const { getOrCreateReminderLocation, updateDeadlineMessage } = require('../reminders');
+const { loadDeadlines, saveDeadlines } = require('../storage/deadlineStorage');
+const { resolveChannel } = require('../services/channels');
+const { getOrCreateReminderLocation, updateDeadlineMessage } = require('../services/reminders');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 

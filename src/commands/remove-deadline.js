@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { loadDeadlines, saveDeadlines } = require('../deadlineStorage');
-const { resolveChannel } = require('../channels');
-const { updateDeadlineMessage } = require('../reminders');
+const { loadDeadlines, saveDeadlines } = require('../storage/deadlineStorage');
+const { resolveChannel } = require('../services/channels');
+const { updateDeadlineMessage } = require('../services/reminders');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 

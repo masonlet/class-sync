@@ -1,7 +1,7 @@
 const { ChannelType } = require('discord.js');
 const { isForumChannel, isTextChannel } = require('./channels');
-const { loadDeadlines } = require('./deadlineStorage');
-const { loadMessages, saveMessages } = require('./messageStorage');
+const { loadDeadlines } = require('../storage/deadlineStorage');
+const { loadMessages, saveMessages } = require('../storage/messageStorage');
 
 async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   if (isForumChannel(courseChannel)) {

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { loadDeadlines } = require('../deadlineStorage');
-const { resolveChannel } = require('../channels');
+const { loadDeadlines } = require('../storage/deadlineStorage');
+const { resolveChannel } = require('../services/channels');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 
 module.exports = {
