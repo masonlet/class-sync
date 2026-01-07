@@ -2,6 +2,7 @@ const { ChannelType } = require('discord.js');
 const { isForumChannel, isTextChannel } = require('./channels');
 const { loadDeadlines } = require('../storage/deadlineStorage');
 const { loadMessages, saveMessages } = require('../storage/messageStorage');
+const { fromISO } = require('../utils/time');
 
 async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   if (isForumChannel(courseChannel)) {
@@ -63,9 +64,9 @@ async function updateDeadlineMessage(guild, reminderLocationId) {
     if (deadlines.length === 0) {
       content += 'No deadlines.';
     } else {
-      deadlines.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      deadlines.sort((a, b) => fromISO(a.dueDate) - fromISO(b.dueDate));
       content += deadlines.map(d => {
-        const dueDate = new Date(d.dueDate);
+        const dueDate = fromISO(d.dueDate);
         return `- **${d.assignment}** - ${d.courseChannelName} - Due: ${dueDate.toLocaleString()}`;
       }).join('\n');
     }
