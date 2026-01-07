@@ -5,6 +5,7 @@ const { resolveChannel } = require('../services/channels');
 const { getOrCreateReminderLocation, updateDeadlineMessage } = require('../services/reminders');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
+const { now, toISO, discordTimestamp } = require('../utils/time');
 
 module.exports = {
   name: 'add-deadline',
@@ -40,6 +41,7 @@ module.exports = {
       return denyPermission(interaction);
 
     const courseInput = interaction.options.getString('course');
+
     const channel = resolveChannel(interaction.guild, courseInput);
     if (!channel || channel === "DUPLICATE") 
       return replyEphemeral(interaction, channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.");
@@ -47,8 +49,8 @@ module.exports = {
     const cohort = interaction.options.getRole('cohort');
     const assignment = interaction.options.getString('assignment');
     const dateInput = interaction.options.getString('date');
-    const parsedDate = chrono.parseDate(dateInput);
 
+    const parsedDate = chrono.parseDate(dateInput);
     if (!parsedDate) 
       return replyEphemeral(interaction, 'Invalid date format.');
 
@@ -63,21 +65,21 @@ module.exports = {
 
     const deadlines = loadDeadlines();
     const newDeadline = {
-      id: Date.now().toString(),
+      id: String(now().getTime()),
       courseChannelId: channel.id,
       courseChannelName: channel.name,
       cohortId: cohort.id,
       cohortName: cohort.name,
-      assignment: assignment,
-      dueDate: parsedDate.toISOString(),
-      createdAt: new Date().toISOString(),
-      reminderLocationId: reminderLocationId
+      assignment,
+      dueDate: toISO(parsedDate),
+      createdAt: toISO(now()),
+      reminderLocationId
     }
 
     deadlines.push(newDeadline);
     saveDeadlines(deadlines);
     await updateDeadlineMessage(interaction.guild, reminderLocationId);
 
-    return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
+    return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${discordTimestamp(parsedDate)}`);
   }
 }
