@@ -1,0 +1,70 @@
+const { loadDeadlines } = require('../storage/deadlineStorage');
+const { loadMessages, saveMessages } = require('../storage/messageStorage');
+const { fromISO, discordTimestamp } = require('../utils/time');
+
+function sortDeadlinesByDate(deadlines) {
+  return deadlines.sort((a, b) => fromISO(a.dueDate) - fromISO(b.dueDate));
+}
+
+function formatDeadlineItem(deadline) {
+  const dueDate = fromISO(deadline.dueDate);
+  return `- **${deadline.assignment}** - ${deadline.courseChannelName} - Due: ${discordTimestamp(dueDate)} (${discordTimestamp(dueDate, 'R')})`;
+}
+
+function buildDeadlineContent(deadlines) {
+  let content = '**Upcoming Deadlines:**\n\n';
+
+  if (deadlines.length === 0) {
+    content += 'No deadlines.';
+  } else {
+    const sorted = sortDeadlinesByDate(deadlines);
+    content += sorted.map(formatDeadlineItem).join('\n');
+  }
+
+  return content;
+}
+
+async function createAndPinMessage(channel, content, messages, reminderLocationId) {
+  const newMessage = await channel.send(content);
+  await newMessage.pin();
+  messages[reminderLocationId] = newMessage.id;
+  saveMessages(messages);
+}
+
+async function updateOrCreateMessage(channel, content, messages, reminderLocationId) {
+  const existingMessageId = messages[reminderLocationId];
+
+  if (existingMessageId) {
+    try {
+      const message = await channel.messages.fetch(existingMessageId);
+      await message.edit(content);
+    } catch (error) {
+      await createAndPinMessage(channel, content, messages, reminderLocationId);
+    }
+  } else {
+    await createAndPinMessage(channel, content, messages, reminderLocationId);
+  }
+}
+
+async function updateDeadlineMessage(guild, reminderLocationId) {
+  try {
+    const channel = await guild.channels.fetch(reminderLocationId);
+    if (!channel) {
+      console.error('Could not find reminder location channel');
+      return false;
+    }
+
+    const messages = loadMessages();
+    const deadlines = loadDeadlines().filter(d => d.reminderLocationId === reminderLocationId);
+    let content = buildDeadlineContent(deadlines);
+
+    await updateOrCreateMessage(channel, content, messages, reminderLocationId);
+
+    return true;
+  } catch (error) {
+    console.error('Failed to update deadline message:', error.message);
+    return false;
+  }
+}
+
+module.exports = { updateDeadlineMessage };
