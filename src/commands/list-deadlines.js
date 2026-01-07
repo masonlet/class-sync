@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { loadDeadlines } = require('../storage/deadlineStorage');
 const { resolveChannel } = require('../services/channels');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
-const { fromISO } = require('../utils/time');
+const { fromISO, discordTimestamp } = require('../utils/time');
 
 module.exports = {
   name: 'list-deadlines',
@@ -38,6 +38,7 @@ module.exports = {
       if (channel) 
         deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
     }
+
     if(cohortFilter) 
       deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
 
@@ -45,7 +46,7 @@ module.exports = {
       return replyEphemeral(interaction, 'No deadlines found.');
 
     const response = deadlines.map(d =>
-      `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${fromISO(d.dueDate).toLocaleString()}`
+      `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${discordTimestamp(fromISO(d.dueDate))}`
     ).join('\n');
 
     return replyEphemeral(interaction, `**Stored Deadlines:**\n${response}`);

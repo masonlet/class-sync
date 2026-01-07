@@ -5,7 +5,7 @@ const { resolveChannel } = require('../services/channels');
 const { getOrCreateReminderLocation, updateDeadlineMessage } = require('../services/reminders');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
-const { now, toISO } = require('../utils/time');
+const { now, toISO, discordTimestamp } = require('../utils/time');
 
 module.exports = {
   name: 'add-deadline',
@@ -80,6 +80,6 @@ module.exports = {
     saveDeadlines(deadlines);
     await updateDeadlineMessage(interaction.guild, reminderLocationId);
 
-    return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${parsedDate.toLocaleString()}`);
+    return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${discordTimestamp(parsedDate)}`);
   }
 }
