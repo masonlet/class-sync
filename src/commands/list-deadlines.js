@@ -3,6 +3,7 @@ const { loadDeadlines } = require('../storage/deadlineStorage');
 const { resolveChannel } = require('../services/channels');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 const { fromISO, discordTimestamp } = require('../utils/time');
+const { validateChannelFilter } = require('../utils/commandHelpers');
 
 module.exports = {
   name: 'list-deadlines',
@@ -32,10 +33,11 @@ module.exports = {
     if(courseFilter) {
       const channel = resolveChannel(interaction.guild, courseFilter);
 
-      if (channel === "DUPLICATE")   
-        return replyEphemeral(interaction, "Multiple channels match your filter. Please be more specific.");
+      const channelValidation = validateChannelFilter(channel);
+      if(!channelValidation.valid) 
+        return replyEphemeral(interaction, channelValidation.error);
 
-      if (channel) 
+      if (channel)
         deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
     }
 

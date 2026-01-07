@@ -4,6 +4,10 @@ const { loadDeadlines, saveDeadlines } = require('../storage/deadlineStorage');
 const { resolveChannel } = require('../services/channels');
 const { getOrCreateReminderLocation } = require('../services/reminderLocation');
 const { updateDeadlineMessage } = require('../services/reminderMessages');
+const { 
+  extractCommandInputs, 
+  validateChannelResolution
+} = require('../utils/commandHelpers');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 const { now, toISO, discordTimestamp } = require('../utils/time');
@@ -41,15 +45,12 @@ module.exports = {
     if(!hasPermission(interaction)) 
       return denyPermission(interaction);
 
-    const courseInput = interaction.options.getString('course');
+    const { courseInput, cohort, assignment, dateInput } = extractCommandInputs(interaction);
 
     const channel = resolveChannel(interaction.guild, courseInput);
-    if (!channel || channel === "DUPLICATE") 
-      return replyEphemeral(interaction, channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.");
-    
-    const cohort = interaction.options.getRole('cohort');
-    const assignment = interaction.options.getString('assignment');
-    const dateInput = interaction.options.getString('date');
+    const channelValidation = validateChannelResolution(channel);
+    if (!channelValidation.valid)
+      return replyEphemeral(interaction, channelValidation.error);
 
     const parsedDate = chrono.parseDate(dateInput);
     if (!parsedDate) 
