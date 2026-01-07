@@ -1,25 +1,37 @@
 const { ChannelType } = require('discord.js');
 
-function resolveChannel(guild, courseInput) {
-  if (!courseInput || !guild) return null;
-
-  const channels = guild.channels.cache.filter(c =>
+function getEligibleChannels(guild) {
+  return guild.channels.cache.filter(c =>
     c.type === ChannelType.GuildText || c.type === ChannelType.GuildForum
   );
+}
 
-  // Check Mention <#ID> or Raw ID
-  const idMatch = courseInput.match(/^<#(\d+)>$/);
-  if (idMatch) return channels.get(idMatch[1]) || null;
+function tryResolveById(channels, input) {
+  const idMatch = input.match(/^<#(\d+)>$/);
+  if (!idMatch) return null;
+  return channels.get(idMatch[1]) || null;
+}
 
-  const normalizedInput = courseInput.toLowerCase().trim();
+function normalizeInput(input) {
+  return input.toLowerCase().trim();
+}
+
+function tryExactMatch(channels, input) {
+  const normalizedInput = normalizeInput(input);
 
   // Exact Match
-  const exactMatches = channels.filter(c => c.name.toLowerCase() === normalizedInput.replace(/\s+/g, '-'));
+  const exactMatches = channels.filter(c => 
+    c.name.toLowerCase() === normalizedInput.replace(/\s+/g, '-')
+  );
+
   if (exactMatches.size === 1) return exactMatches.first();
   if (exactMatches.size > 1) return "DUPLICATE";
-  
-  // Smart Search (Spit into keywords and check for matches)
-  const inputKeywords = normalizedInput 
+  return null;
+}
+
+function tryKeywordMatch(channels, input) {
+  const normalized = normalizeInput(input);
+  const inputKeywords = normalized
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter(Boolean);
@@ -32,8 +44,21 @@ function resolveChannel(guild, courseInput) {
   });
 
   if (keywordMatches.size > 1) return "DUPLICATE";
-
   return keywordMatches.first() || null;
+}
+
+function resolveChannel(guild, courseInput) {
+  if (!courseInput || !guild) return null;
+
+  const channels = getEligibleChannels(guild);
+
+  const byId = tryResolveById(channels, courseInput);
+  if (byId !== null) return byId;
+
+  const exact = tryExactMatch(channels, courseInput);
+  if (exact !== null) return exact;
+
+  return tryKeywordMatch(channels, courseInput);
 }
 
 const isForumChannel = (channel) => channel?.type === ChannelType.GuildForum;
