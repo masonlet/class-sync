@@ -50,6 +50,16 @@ describe('time utilities', () => {
       
       expect(result.toISOString()).toBe('2026-01-15T10:30:00.000Z');
     });
+
+    it('returns Invalid Date for malformed strings', () => {
+      const result = fromISO('not-a-date');
+      expect(result.getTime()).toBeNaN();
+    });
+
+    it('returns Invalid Date for impossible dates', () => {
+      const result = fromISO('2026-13-40T99:99:99.000Z');
+      expect(result.getTime()).toBeNaN();
+    });
   });
 
   describe('discordTimestamp()', () => {

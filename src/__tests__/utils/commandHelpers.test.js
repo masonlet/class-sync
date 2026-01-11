@@ -39,7 +39,7 @@ describe('commandHelpers', () => {
       expect(mockInteraction.options.getRole).toHaveBeenCalledWith('cohort');
     });
 
-    it('handles null values', () => {
+    it('handles all null values', () => {
       const mockInteraction = {
         options: {
           getString: jest.fn(() => null),
@@ -52,6 +52,25 @@ describe('commandHelpers', () => {
         courseInput: null,
         cohort: null,
         assignment: null,
+        dateInput: null
+      });
+    });
+
+    it('handles mixed provided and null values', () => {
+      const mockInteraction = {
+        options: {
+          getString: jest.fn((key) => {
+            return { course: 'CS101', assignment: 'HW1', date: null }[key];
+          }),
+          getRole: jest.fn(() => null)
+        }
+      };
+
+      const result = extractCommandInputs(mockInteraction);
+      expect(result).toEqual({
+        courseInput: 'CS101',
+        cohort: null,
+        assignment: 'HW1',
         dateInput: null
       });
     });
@@ -139,6 +158,14 @@ describe('commandHelpers', () => {
       expect(result).toBeUndefined();
     });
 
+    it('returns undefined when assignment does not match', () => {
+      const channel = { id: '1' };
+      const cohort = { id: 'A' };
+
+      const result = findDeadline(mockDeadlines, channel, cohort, 'Wrong Assignment');
+      expect(result).toBeUndefined();
+    });
+
     it('distinguishes between different cohorts', () => {
       const channel = { id: '1' };
       const cohort = { id: 'B' };
@@ -163,6 +190,36 @@ describe('commandHelpers', () => {
       const assignment = 'Quiz 1';
 
       const result = findDeadline([], channel, cohort, assignment);
+      expect(result).toBeUndefined();
+    });
+
+    it('handles deadlines array with null entries', () => {
+      const deadlinesWithNulls = [
+        null,
+        { courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1', date: '2026-01-15' },
+        undefined,
+        { courseChannelId: '2', cohortId: 'B', assignment: 'Quiz 2', date: '2026-01-16' }
+      ];
+      const channel = { id: '1' };
+      const cohort = { id: 'A' };
+      const assignment = 'Quiz 1';
+
+      const result = findDeadline(deadlinesWithNulls, channel, cohort, assignment);
+      expect(result).toEqual(deadlinesWithNulls[1]);
+    });
+
+    it('returns undefined when channel is null', () => {
+      const result = findDeadline(mockDeadlines, null, { id: 'A' }, 'Quiz 1');
+      expect(result).toBeUndefined();
+    });
+
+    it('returns undefined when cohort is null', () => {
+      const result = findDeadline(mockDeadlines, { id: '1' }, null, 'Quiz 1');
+      expect(result).toBeUndefined();
+    });
+
+    it('returns undefined when both channel and cohort are null', () => {
+      const result = findDeadline(mockDeadlines, null, null, 'Quiz 1');
       expect(result).toBeUndefined();
     });
   });

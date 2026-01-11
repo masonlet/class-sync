@@ -4,8 +4,9 @@ function hasPermission(interaction) {
   const hasHelper = interaction.member.roles.cache.some(
     role => role.name === process.env.HELPER_ROLE_NAME
   );
-  const hasAdmin = interaction.member.permissions.has('Administrator');
-  return hasHelper || hasAdmin;
+  if (hasHelper) return true;
+
+  return interaction.member.permissions.has('Administrator');
 }
 
 async function denyPermission(interaction) {

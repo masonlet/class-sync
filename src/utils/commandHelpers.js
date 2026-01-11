@@ -25,7 +25,9 @@ function validateChannelFilter(channel) {
 }
 
 function findDeadline(deadlines, channel, cohort, assignment) {
-  return deadlines.find(d =>
+  if (!channel || !cohort) return undefined;
+
+  return deadlines.find(d => d &&
     d.courseChannelId === channel.id &&
     d.cohortId === cohort.id &&
     d.assignment === assignment

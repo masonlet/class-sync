@@ -17,9 +17,15 @@ const makeInteraction = ({ roleNames = [], isAdmin = false } = {}) => ({
 });
 
 describe('permissions', () => {
+  const originalEnv = process.env.HELPER_ROLE_NAME;
+
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.HELPER_ROLE_NAME = 'Helper';
+  });
+
+  afterAll(() => {
+    process.env.HELPER_ROLE_NAME = originalEnv;
   });
 
   describe('hasPermission()', () => {
@@ -30,6 +36,16 @@ describe('permissions', () => {
       });
       const result = hasPermission(interaction);
       expect(result).toBe(true);
+    });
+
+    it('does not check admin permission when helper role exists', () => {
+      const interaction = makeInteraction({
+        roleNames: ['Helper'],
+        isAdmin: false
+      });
+
+      hasPermission(interaction);
+      expect(interaction.member.permissions.has).not.toHaveBeenCalled();
     });
 
     it('returns true when user has Administrator permission', () => {
@@ -78,6 +94,16 @@ describe('permissions', () => {
       });
       const result = hasPermission(interaction);
       expect(result).toBe(true);
+    });
+
+    it('is case-sensitive with role names', () => {
+      process.env.HELPER_ROLE_NAME = 'Helper';
+      const interaction = makeInteraction({ 
+        roleNames: ['helper'],
+        isAdmin: false
+      });
+      const result = hasPermission(interaction);
+      expect(result).toBe(false);
     });
   });
 
