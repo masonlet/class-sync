@@ -23,4 +23,4 @@ function saveDeadlines(deadlines) {
   }
 }
 
-module.exports = { loadDeadlines, saveDeadlines };
+module.exports = { loadDeadlines, saveDeadlines, DEADLINES_FILE };

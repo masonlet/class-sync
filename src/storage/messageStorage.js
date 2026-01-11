@@ -23,4 +23,4 @@ function saveMessages(tracking) {
   }
 }
 
-module.exports = { loadMessages, saveMessages };
+module.exports = { loadMessages, saveMessages, MESSAGES_FILE };
