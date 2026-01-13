@@ -13,26 +13,34 @@ async function createForumThread(courseChannel) {
 async function registerThreadMessage(thread) {
   const messages = loadMessages();
   const starterMessage = await thread.fetchStarterMessage();
+  if(!starterMessage) return;
   messages[thread.id] = starterMessage.id;
   saveMessages(messages);
 }
 
 async function findOrCreateForumThread(courseChannel) {
-  const threads = await courseChannel.threads.fetchActive();
-  let dueDatesThread = threads.threads.find(t => t.name === 'Due Dates');
+  try {
+    const threads = await courseChannel.threads.fetchActive();
+    let dueDatesThread = threads.threads.find(t => t.name === 'Due Dates');
 
-  if (!dueDatesThread) {
-    dueDatesThread = await createForumThread(courseChannel);
-    await registerThreadMessage(dueDatesThread);
+    if (!dueDatesThread) {
+      dueDatesThread = await createForumThread(courseChannel);
+      await registerThreadMessage(dueDatesThread);
+    }
+
+    return dueDatesThread.id;
+  } catch (error) {
+    console.error('Failed to create forum thread:', error);
+    return null;
   }
-
-  return dueDatesThread.id;
 }
 
 async function findOrCreateTextChannel(guild, courseChannel, cohortName) {
-  const channelName = `${cohortName.toLowerCase()}-due-dates`;
+  const channelName = `${cohortName.toLowerCase().replace(/\s+/g, '-')}-due-dates`;
   let dueDatesChannel = guild.channels.cache.find(c =>
-    c.type === ChannelType.GuildText && c.name === channelName
+    c.type === ChannelType.GuildText &&
+    c.name === channelName &&
+    c.parentId === courseChannel.parentId
   );
 
   if (!dueDatesChannel) {
@@ -40,10 +48,10 @@ async function findOrCreateTextChannel(guild, courseChannel, cohortName) {
       dueDatesChannel = await guild.channels.create({
         name: channelName,
         type: ChannelType.GuildText,
-        parent: courseChannel.parentId
+        parent: courseChannel.parentId ?? null
       });
     } catch (error) {
-      console.error('Failed to create due-dates channel:', error.message);
+      console.error('Failed to create due-dates channel:', error);
       return null;
     }
   }
