@@ -47,7 +47,9 @@ describe('reminderLocation', () => {
       const thread = makeThread('thread123', 'Due Dates');
       const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
       const activeThreads = new MockCollection([['thread123', thread]]);
-      forumChannel.threads.fetchActive.mockResolvedValue({ threads: activeThreads });
+      forumChannel.threads.fetchActive.mockResolvedValue({ 
+        threads: activeThreads 
+      });
 
       const guild = makeGuild([forumChannel]);
       const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
@@ -57,16 +59,17 @@ describe('reminderLocation', () => {
     });
 
     it('creates new Due Dates thread if not found and registers starter message', async () => {
+      loadMessages.mockReturnValue({});
+
       const newThread = makeThread('thread456', 'Due Dates');
       const starterMessage = { id: 'msg123' };
       newThread.fetchStarterMessage.mockResolvedValue(starterMessage);
 
       const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
-      forumChannel.threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
+      forumChannel.threads.fetchActive.mockResolvedValue({
+        threads: new MockCollection() 
+      });
       forumChannel.threads.create.mockResolvedValue(newThread);
-
-      loadMessages.mockReturnValue({});
-      saveMessages.mockImplementation(() => {});
 
       const guild = makeGuild([forumChannel]);
       const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
@@ -236,6 +239,61 @@ describe('reminderLocation', () => {
 
       const result = await getOrCreateReminderLocation(guild, voiceChannel, 'cohort');
       expect(result).toBeNull();
+    });
+
+    describe('cohort name edge cases', () => {
+      it('handles cohort names with special characters', async () => {
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const dueDatesChannel = makeChannel('2', 'cohort-2024-due-dates', ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel, dueDatesChannel]);
+
+        const result = await getOrCreateReminderLocation(guild, courseChannel, 'Cohort-2024!');
+
+        expect(result).toBe('2');
+      });
+
+      it('handles very long cohort names', async () => {
+        const longCohortName = 'a'.repeat(50);
+        const expectedChannelName = `${longCohortName.toLowerCase()}-due-dates`;
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const newChannel = makeChannel('2', expectedChannelName, ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel]);
+        guild.channels.create.mockResolvedValue(newChannel);
+
+        const result = await getOrCreateReminderLocation(guild, courseChannel, longCohortName);
+
+        expect(result).toBe('2');
+      });
+
+      it('handles empty cohort name', async () => {
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const dueDatesChannel = makeChannel('2', '-due-dates', ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel, dueDatesChannel]);
+
+        const result = await getOrCreateReminderLocation(guild, courseChannel, '');
+
+        expect(result).toBe('2');
+      });
+    });
+  });
+
+  describe('error recovery', () => {
+    it('handles network timeout during thread creation', async () => {
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      forumChannel.threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
+
+      const timeoutError = new Error('Request timed out');
+      timeoutError.code = 'ETIMEDOUT';
+      forumChannel.threads.create.mockRejectedValue(timeoutError);
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const guild = makeGuild([forumChannel]);
+
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+
+      expect(result).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
 });
