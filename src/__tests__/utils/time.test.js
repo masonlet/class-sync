@@ -60,6 +60,54 @@ describe('time utilities', () => {
       const result = fromISO('2026-13-40T99:99:99.000Z');
       expect(result.getTime()).toBeNaN();
     });
+
+    describe('edge cases', () => {
+      it('handles leap year dates correctly', () => {
+        const leapYear = '2024-02-29T12:00:00.000Z';
+        const result = fromISO(leapYear);
+
+        expect(result.getFullYear()).toBe(2024);
+        expect(result.getMonth()).toBe(1);
+        expect(result.getDate()).toBe(29);
+      });
+
+      it('rejects invalid leap year dates', () => {
+        const invalidLeapYear = '2025-02-29T12:00:00.000Z';
+        const result = fromISO(invalidLeapYear);
+
+        expect(result.getTime()).toBeNaN();
+      });
+
+      it('handles year boundary transitions', () => {
+        const newYearEve = '2025-12-31T23:59:59.999Z';
+        const newYear = '2026-01-01T00:00:00.000Z';
+
+        const result1 = fromISO(newYearEve);
+        const result2 = fromISO(newYear);
+
+        expect(result1.getUTCFullYear()).toBe(2025);
+        expect(result2.getUTCFullYear()).toBe(2026);
+        expect(result2.getTime() - result1.getTime()).toBe(1);
+      });
+
+      it('handles various timezone formats', () => {
+        const utc = fromISO('2026-01-15T10:00:00Z');
+        const withPlus = fromISO('2026-01-15T10:00:00+00:00');
+        const withOffset = fromISO('2026-01-15T05:00:00-05:00');
+
+        expect(utc.toISOString()).toBe('2026-01-15T10:00:00.000Z');
+        expect(withPlus.toISOString()).toBe('2026-01-15T10:00:00.000Z');
+        expect(withOffset.toISOString()).toBe('2026-01-15T10:00:00.000Z');
+      });
+
+      it('handles milliseconds precision', () => {
+        const withMs = fromISO('2026-01-15T10:30:45.123Z');
+        const withoutMs = fromISO('2026-01-15T10:30:45Z');
+
+        expect(withMs.getMilliseconds()).toBe(123);
+        expect(withoutMs.getMilliseconds()).toBe(0);
+      });
+    });
   });
 
   describe('discordTimestamp()', () => {
@@ -91,6 +139,29 @@ describe('time utilities', () => {
       const result = discordTimestamp(date);
 
       expect(result).toBe('<t:1:F>');
+    });
+
+    describe('edge cases', () => {
+      it('handles unix epoch correctly', () => {
+        const epoch = new Date(0);
+        const result = discordTimestamp(epoch);
+
+        expect(result).toBe('<t:0:F>');
+      });
+
+      it('handles far future dates', () => {
+        const farFuture = new Date('2099-12-31T23:59:59.999Z');
+        const result = discordTimestamp(farFuture);
+
+        expect(result).toMatch(/^<t:\d+:F>$/);
+      });
+
+      it('handles negative timestamps for pre-1970 dates', () => {
+        const preEpoch = new Date('1969-12-31T23:59:59.000Z');
+        const result = discordTimestamp(preEpoch);
+
+        expect(result).toMatch(/^<t:-?\d+:F>$/);
+      });
     });
   });
 
