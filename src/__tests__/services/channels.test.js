@@ -53,6 +53,57 @@ describe('channels', () => {
       const result = resolveChannel(guild, '123');
       expect(result).not.toBe(channel);
     });
+
+    describe('performance and edge cases', () => {
+      it('handles large channel collections efficiently', () => {
+        const channels = [];
+        for (let i = 0; i < 1000; i++) {
+          channels.push(makeChannel(`${i}`, `channel-${i}`));
+        }
+        channels.push(makeChannel('target', 'target-channel'));
+
+        const guild = makeGuild(channels);
+        const start = Date.now();
+        const result = resolveChannel(guild, 'target-channel');
+        const duration = Date.now() - start;
+
+        expect(result.id).toBe('target');
+        expect(duration).toBeLessThan(100);
+      });
+
+      it('handles channels with unicode characters', () => {
+        const channel = makeChannel('1', '日本語-チャンネル');
+        const guild = makeGuild([channel]);
+
+        const result = resolveChannel(guild, '日本語-チャンネル');
+        expect(result).toBe(channel);
+      });
+
+      it('handles channels with emoji in names', () => {
+        const channel = makeChannel('1', '🎮-gaming');
+        const guild = makeGuild([channel]);
+
+        const result = resolveChannel(guild, '🎮-gaming');
+        expect(result).toBe(channel);
+      });
+
+      it('handles extremely long channel names', () => {
+        const longName = 'a'.repeat(100);
+        const channel = makeChannel('1', longName);
+        const guild = makeGuild([channel]);
+
+        const result = resolveChannel(guild, longName);
+        expect(result).toBe(channel);
+      });
+
+      it('handles multiple consecutive spaces in input', () => {
+        const channel = makeChannel('1', 'course-name');
+        const guild = makeGuild([channel]);
+
+        const result = resolveChannel(guild, 'course    name');
+        expect(result).toBe(channel);
+      });
+    });
   });
 
   describe('exact name matching', () => {
@@ -92,7 +143,7 @@ describe('channels', () => {
   });
 
   describe('keyword matching', () => {
-    it('matches channel containg all keywords', () => {
+    it('matches channel containing all keywords', () => {
       const channel = makeChannel('1', 'info-5101-csharp-advanced');
       const guild = makeGuild([channel]);
 
