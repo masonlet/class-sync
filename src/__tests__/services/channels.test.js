@@ -1,33 +1,6 @@
 const { ChannelType } = require('discord.js');
 const { resolveChannel, isForumChannel, isTextChannel } = require('../../services/channels');
-
-const makeChannel = (id, name, type = ChannelType.GuildText) => ({
-  id,
-  name,
-  type
-});
-
-class MockCollection extends Map {
-  filter(fn) {
-    const filtered = new MockCollection();
-    for (const [key, value] of this) {
-      if (fn(value, key, this)) {
-        filtered.set(key, value);
-      }
-    }
-    return filtered;
-  }
-
-  first() {
-    return this.values().next().value;
-  }
-}
-
-const makeGuild = (channels) => ({
-  channels: {
-    cache: new MockCollection(channels.map(c => [c.id, c]))
-  }
-});
+const { MockCollection, makeChannel, makeGuild } = require('../helpers/discordMocks');
 
 describe('channels', () => {
   describe('resolveChannel()', () => {

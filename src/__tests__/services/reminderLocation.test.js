@@ -1,41 +1,9 @@
 const { ChannelType } = require('discord.js');
 const { getOrCreateReminderLocation } = require('../../services/reminderLocation');
 const { loadMessages, saveMessages } = require('../../storage/messageStorage');
+const { MockCollection, makeChannel, makeThread, makeGuild } = require('../helpers/discordMocks');
 
 jest.mock('../../storage/messageStorage');
-
-const makeChannel = (id, name, type = ChannelType.GuildText, parentId = null) => ({
-  id,
-  name,
-  type,
-  parentId,
-  threads: {
-    create: jest.fn(),
-    fetchActive: jest.fn()
-  }
-});
-
-const makeThread = (id, name) => ({
-  id,
-  name,
-  fetchStarterMessage: jest.fn()
-});
-
-class MockCollection extends Map {
-  find(fn) {
-    for (const [key, value] of this) {
-      if(fn(value, key, this)) return value;
-    }
-    return undefined;
-  }
-}
-
-const makeGuild = (channels) => ({
-  channels: {
-    cache: new MockCollection(channels.map(c => [c.id, c])),
-    create: jest.fn()
-  }
-});
 
 describe('reminderLocation', () => {
   beforeEach(() => {
