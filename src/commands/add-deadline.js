@@ -3,7 +3,7 @@ const chrono = require('chrono-node');
 const { loadDeadlines, saveDeadlines } = require('../storage/deadlineStorage');
 const { resolveChannel } = require('../services/channels');
 const { getOrCreateReminderLocation } = require('../services/reminderLocation');
-const { updateDeadlineMessage } = require('../services/reminderMessages');
+const { updateDeadlineMessage } = require('../services/reminderMessage');
 const { 
   extractCommandInputs, 
   validateChannelResolution
