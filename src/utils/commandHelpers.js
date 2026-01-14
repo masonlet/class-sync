@@ -1,9 +1,9 @@
 function extractCommandInputs(interaction) {
   return {
-    courseInput: interaction.options.getString('course'),
+    course: interaction.options.getString('course'),
     cohort: interaction.options.getRole('cohort'),
     assignment: interaction.options.getString('assignment'),
-    dateInput: interaction.options.getString('date')
+    date: interaction.options.getString('date')
   };
 }
 
