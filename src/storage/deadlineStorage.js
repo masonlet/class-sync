@@ -7,12 +7,13 @@ function loadDeadlines() {
   try {
     if(fs.existsSync(DEADLINES_FILE)) {
       const data = fs.readFileSync(DEADLINES_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      return Array.isArray(parsed) ? parsed : [];
     }
   } catch (error) {
     console.error('Error loading deadlines:', error);
   }
-  return []
+  return [];
 }
 
 function saveDeadlines(deadlines) {
