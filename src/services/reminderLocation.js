@@ -14,6 +14,7 @@ async function registerThreadMessage(thread) {
   const messages = loadMessages();
   const starterMessage = await thread.fetchStarterMessage();
   if(!starterMessage) return;
+
   messages[thread.id] = starterMessage.id;
   saveMessages(messages);
 }
@@ -36,7 +37,7 @@ async function findOrCreateForumThread(courseChannel) {
 }
 
 async function findOrCreateTextChannel(guild, courseChannel, cohortName) {
-  const channelName = `${cohortName.toLowerCase().replace(/\s+/g, '-')}-due-dates`;
+  const channelName = `${cohortName.toLowerCase().replace(/[^a-z0-9-\s]/g, '').replace(/\s+/g, '-')}-due-dates`;
   let dueDatesChannel = guild.channels.cache.find(c =>
     c.type === ChannelType.GuildText &&
     c.name === channelName &&
