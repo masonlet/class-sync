@@ -7,7 +7,12 @@ function loadMessages() {
   try {
     if (fs.existsSync(MESSAGES_FILE)) {
       const data = fs.readFileSync(MESSAGES_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      return parsed && 
+             typeof parsed === 'object' && 
+             !Array.isArray(parsed) 
+        ? parsed 
+        : {};
     }
   } catch (error) {
     console.error('Error loading message tracking:', error);
