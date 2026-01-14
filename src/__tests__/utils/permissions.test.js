@@ -67,6 +67,41 @@ describe('permissions', () => {
       const result = hasPermission(interaction);
       expect(result).toBe(false);
     });
+
+    describe('edge cases', () => {
+      describe.each([
+        ['missing roles cache', (interaction) => { interaction.member.roles.cache = null; }],
+        ['missing permissions object', (interaction) => { interaction.member.roles.cache = null; }],
+      ])('handles %s gracefully', (description, mutate) => {
+        it('does not throw and returns false', () => {
+          const interaction = makeInteraction({ roleNames: [] });
+          mutate(interaction);
+          expect(() => hasPermission(interaction)).not.toThrow();
+          expect(hasPermission(interaction)).toBe(false);
+        });
+      });
+
+      it('handles missing HELPER_ROLE_NAME environment variable', () => {
+        const original = process.env.HELPER_ROLE_NAME;
+        delete process.env.HELPER_ROLE_NAME;
+
+        const interaction = makeHelperUser();
+        const result = hasPermission(interaction);
+
+        expect(result).toBe(false);
+
+        process.env.HELPER_ROLE_NAME = original;
+      });
+
+      it('handles whitespace in role names', () => {
+        process.env.HELPER_ROLE_NAME = 'Helper';
+        const interaction = makeHelperUser(['  Helper  ']);
+
+        const result = hasPermission(interaction);
+
+        expect(result).toBe(false);
+      });
+    });
   });
 
   describe('denyPermission()', () => {
