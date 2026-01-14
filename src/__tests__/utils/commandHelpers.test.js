@@ -4,78 +4,78 @@ const {
   validateChannelFilter,
   findDeadline 
 } = require('../../utils/commandHelpers');
+const { makeInteraction, makeCommandOptions } = require('../helpers/interactions');
 
 describe('commandHelpers', () => {
   describe('extractCommandInputs()', () => {
-    it('extracts all command options from interaction', () => {
-      const mockInteraction = {
+    it('calls Discord options API correctly', () => {
+      const mockInteraction = makeInteraction({
         options: {
-          getString: jest.fn((key) => {
-            const values = { 
-              course: 'INFO0001', 
-              assignment: 'Quiz1', 
-              date: '2026-01-15' 
-            };
-            return values[key];
-          }),
-          getRole: jest.fn(() => ({ 
-            id: '0000000000000000001', 
-            name: 'Cohort A' 
-          }))
+          course: 'INFO0001',
+          assignment: 'Quiz1',
+          date: '2026-01-01',
+          cohort: { id: '0000000000000000001', name: 'Cohort A' }
         }
-      };
-
-      const result = extractCommandInputs(mockInteraction);
-      expect(result).toEqual({
-        courseInput: 'INFO0001',
-        cohort: { id: '0000000000000000001', name: 'Cohort A' },
-        assignment: 'Quiz1',
-        dateInput: '2026-01-15'
       });
 
+      extractCommandInputs(mockInteraction);
+ 
       expect(mockInteraction.options.getString).toHaveBeenCalledWith('course');
       expect(mockInteraction.options.getString).toHaveBeenCalledWith('assignment');
       expect(mockInteraction.options.getString).toHaveBeenCalledWith('date');
       expect(mockInteraction.options.getRole).toHaveBeenCalledWith('cohort');
     });
 
-    it('handles all null values', () => {
-      const mockInteraction = {
-        options: {
-          getString: jest.fn(() => null),
-          getRole: jest.fn(() => null)
+    describe.each([
+      [
+        'all values provided',
+        {
+          course: 'INFO0001',
+          assignment: 'Quiz1',
+          date: '2026-01-01',
+          cohort: { id: '0000000000000000001', name: 'Cohort A' }
+        },
+        {
+          course: 'INFO0001',
+          assignment: 'Quiz1',
+          date: '2026-01-01',
+          cohort: { id: '0000000000000000001', name: 'Cohort A' }
         }
-      };
-
-      const result = extractCommandInputs(mockInteraction);
-      expect(result).toEqual({
-        courseInput: null,
-        cohort: null,
-        assignment: null,
-        dateInput: null
-      });
-    });
-
-    it('handles mixed provided and null values', () => {
-      const mockInteraction = {
-        options: {
-          getString: jest.fn((key) => {
-            return { course: 'CS101', assignment: 'HW1', date: null }[key];
-          }),
-          getRole: jest.fn(() => null)
+      ],
+      [
+        'all null values',
+        {},
+        {
+          course: null,
+          assignment: null,
+          date: null,
+          cohort: null
         }
-      };
-
-      const result = extractCommandInputs(mockInteraction);
-      expect(result).toEqual({
-        courseInput: 'CS101',
-        cohort: null,
-        assignment: 'HW1',
-        dateInput: null
+      ],
+      [
+        'mixed provided and null values',
+        { 
+          course: 'INFO0001', 
+          assignment: 'Quiz1' 
+        },
+        {
+          course: 'INFO0001',
+          assignment: 'Quiz1',
+          date: null,
+          cohort: null
+        }
+      ]
+    ])('extracts %s', (description, options, expected) => {
+      it('returns correct output shape', () => {
+        const mockInteraction = makeInteraction({ 
+          options: makeCommandOptions(options) 
+        });
+        const result = extractCommandInputs(mockInteraction);
+        expect(result).toEqual(expected);
       });
     });
   });
-
+   
   describe('validateChannelResolution()', () => {
     it('returns valid for existing channel', () => {
       const channel = { id: '0000000000000000001', name: 'general' };
@@ -85,51 +85,35 @@ describe('commandHelpers', () => {
       });
     });
 
-    it('returns error for null channel', () => {
-      const result = validateChannelResolution(null);
-      expect(result).toEqual({ 
-        valid: false, 
-        error: 'Channel not found.'
-      });
-    });
-
-    it('returns error for undefined channel', () => {
-      const result = validateChannelResolution(undefined);
-      expect(result).toEqual({ 
-        valid: false, 
-        error: 'Channel not found.'
-      });
-    });
-
-    it('returns error for DUPLICATE channel', () => {
-      const result = validateChannelResolution("DUPLICATE");
-      expect(result).toEqual({ 
-        valid: false, 
-        error: 'Multiple channels found.' 
+    describe.each([
+      [null, 'Channel not found.'],
+      [undefined, 'Channel not found.'],
+      ['DUPLICATE', 'Multiple channels found.']
+    ])('validateChannelResolution(%p)', (input, expectedError) => {
+      it(`returns error: "\${expectedError}"`, () => {
+        const result = validateChannelResolution(input);
+        expect(result).toEqual({
+          valid: false,
+          error: expectedError
+        });
       });
     });
   });
 
   describe('validateChannelFilter()', () => {
-    it('returns valid for non-duplicate channel', () => {
-      const result = validateChannelFilter({ 
-        id: '0000000000000000001' 
+    describe.each([
+      [{ id: '0000000000000000001' }, true, undefined],
+      [null, true, undefined],
+      ['DUPLICATE', false, 'Multiple channels match your filter. Please be more specific.']
+    ])('validateChannelFilter(%p)', (input, isValid, errorMsg) => {
+      it(`returns valid: ${isValid}`, () => {
+        const expected = isValid
+          ? { valid: true }
+          : { valid: false, error: errorMsg };
+        const result = validateChannelFilter(input);
+        expect(result).toEqual(expected);
       });
-      expect(result).toEqual({ valid: true });
     });
-
-    it('returns valid for null channel', () => {
-      const result = validateChannelFilter(null);
-      expect(result).toEqual({ valid: true });
-    });
-
-    it('returns error for DUPLICATE channel', () => {
-      const result = validateChannelFilter("DUPLICATE");
-      expect(result).toEqual({
-        valid: false,
-        error: 'Multiple channels match your filter. Please be more specific.'
-      });
-    }); 
   });
 
   describe('findDeadline()', () => {
@@ -144,33 +128,27 @@ describe('commandHelpers', () => {
       const channel = { id: '0' };
       const cohort = { id: 'A' };
       const assignment = 'Quiz 1';
-
       const result = findDeadline(mockDeadlines, channel, cohort, assignment);
       expect(result).toEqual(mockDeadlines[0]);
     });
 
-    it('returns undefined when no match found', () => {
-      const channel = { id: 'nah1' };
-      const cohort = { id: 'nah2' };
-      const assignment = 'nah3';
-
-      const result = findDeadline(mockDeadlines, channel, cohort, assignment);
-      expect(result).toBeUndefined();
-    });
-
-    it('returns undefined when assignment does not match', () => {
-      const channel = { id: '1' };
-      const cohort = { id: 'A' };
-
-      const result = findDeadline(mockDeadlines, channel, cohort, 'Wrong Assignment');
-      expect(result).toBeUndefined();
+    describe.each([
+      ['no match found', { id: 'nah1' }, { id: 'nah2' }, 'nah3'],
+      ['assignment does not match', { id: '1' }, { id: 'A' }, 'Wrong Assignment'],
+      ['channel is null', null, { id: 'A' }, 'Quiz 1'],
+      ['cohort is null', { id: '1' }, null, 'Quiz 1'],
+      ['both channel and cohort are null', null, null, 'Quiz 1']
+    ])('returns undefined when %s', (description, channel, cohort, assignment) => {
+      it('returns undefined', () => {
+        const result = findDeadline(mockDeadlines, channel, cohort, assignment);
+        expect(result).toBeUndefined();
+      });
     });
 
     it('distinguishes between different cohorts', () => {
       const channel = { id: '1' };
       const cohort = { id: 'B' };
       const assignment = 'Quiz 1';
-
       const result = findDeadline(mockDeadlines, channel, cohort, assignment);
       expect(result).toEqual(mockDeadlines[2]);
     });
@@ -179,7 +157,6 @@ describe('commandHelpers', () => {
       const channel = { id: '2' };
       const cohort = { id: 'A' };
       const assignment = 'Quiz 2';
-
       const result = findDeadline(mockDeadlines, channel, cohort, assignment);
       expect(result).toEqual(mockDeadlines[3]);
     });
@@ -188,7 +165,6 @@ describe('commandHelpers', () => {
       const channel = { id: '1' };
       const cohort = { id: 'A' };
       const assignment = 'Quiz 1';
-
       const result = findDeadline([], channel, cohort, assignment);
       expect(result).toBeUndefined();
     });
@@ -203,24 +179,46 @@ describe('commandHelpers', () => {
       const channel = { id: '1' };
       const cohort = { id: 'A' };
       const assignment = 'Quiz 1';
-
       const result = findDeadline(deadlinesWithNulls, channel, cohort, assignment);
       expect(result).toEqual(deadlinesWithNulls[1]);
     });
 
-    it('returns undefined when channel is null', () => {
-      const result = findDeadline(mockDeadlines, null, { id: 'A' }, 'Quiz 1');
-      expect(result).toBeUndefined();
-    });
+    describe('edge cases', () => {
+      it('handles deadlines with null property values', () => {
+        const deadlines = [
+          { courseChannelId: null, cohortId: 'A', assignment: 'Quiz 1', date: '2026-01-01' },
+          { courseChannelId: '1', cohortId: null, assignment: 'Quiz 2', date: '2026-01-02' }
+        ];
+        const result = findDeadline(deadlines, { id: '1' }, { id: 'A' }, 'Quiz 1');
+        expect(result).toBeUndefined();
+      });
 
-    it('returns undefined when cohort is null', () => {
-      const result = findDeadline(mockDeadlines, { id: '1' }, null, 'Quiz 1');
-      expect(result).toBeUndefined();
-    });
+      it('handles case-sensitive assignment names', () => {
+        const deadlines = [{ 
+          courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1', date: '2026-01-01' 
+        }];
+        const result = findDeadline(deadlines, { id: '1' }, { id: 'A' }, 'quiz 1');
+        expect(result).toBeUndefined();
+      });
 
-    it('returns undefined when both channel and cohort are null', () => {
-      const result = findDeadline(mockDeadlines, null, null, 'Quiz 1');
-      expect(result).toBeUndefined();
+      it('distinguishes between similar assignment names', () => {
+        const deadlines = [
+          { courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1', date: '2026-01-01' },
+          { courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 10', date: '2026-01-02' },
+          { courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1 Retake', date: '2026-01-03' }
+        ];
+        const result = findDeadline(deadlines, { id: '1' }, { id: 'A' }, 'Quiz 1');
+        expect(result).toEqual(deadlines[0]);
+        expect(result.assignment).toBe('Quiz 1');
+      });
+
+      it('handles objects without id property', () => {
+        const deadlines = [{ 
+          courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1', date: '2026-01-01' 
+        }];
+        const result = findDeadline(deadlines, {}, { id: 'A' }, 'Quiz 1');
+        expect(result).toBeUndefined();
+      });
     });
   });
 });
