@@ -1,10 +1,12 @@
 const fs = require('fs');
-const path = require('path');
-const { loadMessages, saveMessages, MESSAGES_FILE } = require('../../storage/messageStorage');
+const { loadMessages, saveMessages } = require('../../storage/messageStorage');
+const { getGuildDataPath } = require('../../storage/utils');
 
 jest.mock('fs');
 
 describe('messageStorage', () => {
+  const GUILD_ID = '123456789';
+
   beforeEach(() => {
     jest.clearAllMocks();
     console.error = jest.fn();
@@ -15,22 +17,17 @@ describe('messageStorage', () => {
       const mockMessages = {
         '123': { messageId: 'msg1', channelId: 'ch1' }
       };
+      const messagesFile = getGuildDataPath(GUILD_ID, 'messages.json');
       fs.existsSync.mockReturnValue(true);
       fs.readFileSync.mockReturnValue(JSON.stringify(mockMessages));
-
-      const result = loadMessages();
-
-      expect(fs.existsSync).toHaveBeenCalledWith(MESSAGES_FILE);
-      expect(fs.readFileSync).toHaveBeenCalledWith(MESSAGES_FILE, 'utf8');
-      expect(result).toEqual(mockMessages);
+      expect(loadMessages(GUILD_ID)).toEqual(mockMessages);
+      expect(fs.existsSync).toHaveBeenCalledWith(messagesFile);
+      expect(fs.readFileSync).toHaveBeenCalledWith(messagesFile, 'utf8');
     });
 
     it('returns empty object when file does not exist', () => {
       fs.existsSync.mockReturnValue(false);
-
-      const result = loadMessages();
-
-      expect(result).toEqual({});
+      expect(loadMessages(GUILD_ID)).toEqual({});
       expect(fs.readFileSync).not.toHaveBeenCalled();
     });
 
@@ -39,10 +36,7 @@ describe('messageStorage', () => {
       fs.readFileSync.mockImplementation(() => {
         throw new Error('Read permission denied');
       });
-
-      const result = loadMessages();
-
-      expect(result).toEqual({});
+      expect(loadMessages(GUILD_ID)).toEqual({});
       expect(console.error).toHaveBeenCalledWith(
         'Error loading message tracking:',
         expect.any(Error)
@@ -52,10 +46,7 @@ describe('messageStorage', () => {
     it('returns empty object and logs error on JSON parse failure', () => {
       fs.existsSync.mockReturnValue(true);
       fs.readFileSync.mockReturnValue('invalid json{');
-
-      const result = loadMessages();
-
-      expect(result).toEqual({});
+      expect(loadMessages(GUILD_ID)).toEqual({});
       expect(console.error).toHaveBeenCalledWith(
         'Error loading message tracking:',
         expect.any(Error)
@@ -68,11 +59,10 @@ describe('messageStorage', () => {
       const messages = {
         '123': { messageId: 'msg1', channelId: 'ch1' }
       };
-
-      saveMessages(messages);
-
+      const messagesFile = getGuildDataPath(GUILD_ID, 'messages.json');
+      saveMessages(GUILD_ID, messages);
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        MESSAGES_FILE,
+        messagesFile,
         JSON.stringify(messages, null, 2)
       );
     });
@@ -83,7 +73,7 @@ describe('messageStorage', () => {
         throw new Error('Write permission denied');
       });
 
-      saveMessages(messages);
+      saveMessages(GUILD_ID, messages);
 
       expect(console.error).toHaveBeenCalledWith(
         'Error saving message tracking:',
@@ -93,10 +83,10 @@ describe('messageStorage', () => {
     });
 
     it('handles empty object', () => {
-      saveMessages({});
-
+      const messagesFile = getGuildDataPath(GUILD_ID, 'messages.json');
+      saveMessages(GUILD_ID, {});
       expect(fs.writeFileSync).toHaveBeenCalledWith(
-        MESSAGES_FILE,
+        messagesFile,
         '{}'
       );
     });
