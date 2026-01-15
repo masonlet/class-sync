@@ -4,6 +4,7 @@ const { resolveChannel } = require('../services/channels');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 const { fromISO, discordTimestamp } = require('../utils/time');
 const { validateChannelFilter } = require('../utils/commandHelpers');
+const { getActiveDeadlines } = require('../utils/expiration')
 
 module.exports = {
   name: 'list-deadlines',
@@ -29,6 +30,8 @@ module.exports = {
     const cohortFilter = interaction.options.getRole('cohort');
 
     let deadlines = loadDeadlines(interaction.guildId);
+
+    deadlines = getActiveDeadlines(deadlines);
 
     if(courseFilter) {
       const channel = resolveChannel(interaction.guild, courseFilter);

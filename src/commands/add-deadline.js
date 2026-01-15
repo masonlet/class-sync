@@ -11,6 +11,7 @@ const {
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 const { now, toISO, discordTimestamp } = require('../utils/time');
+const { validateDeadlineTime } = require('../utils/validation');
 
 module.exports = {
   name: 'add-deadline',
@@ -56,6 +57,10 @@ module.exports = {
     if (!parsedDate) 
       return replyEphemeral(interaction, 'Invalid date format.');
 
+    const validation = validateDeadlineTime(parsedDate);
+    if (!validation.valid)
+      return replyEphemeral(interaction, validation.error);
+
     const reminderLocationId = await getOrCreateReminderLocation(
       interaction.guild,
       channel,
@@ -88,7 +93,12 @@ module.exports = {
       assignment,
       dueDate: toISO(parsedDate),
       createdAt: toISO(now()),
-      reminderLocationId
+      reminderLocationId,
+      remindersSent: {
+        '24h': false,
+        '8h': false,
+        '1h': false
+      }
     }
 
     deadlines.push(newDeadline);
