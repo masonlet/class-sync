@@ -55,13 +55,22 @@ npm install
 
 3. Copy .env.example to .env, and update the variables.
 
-- `DISCORD_TOKEN`: Your Discord bot token
-- `DISCORD_CLIENT_ID`: Your Discord application's client ID (for global deployment) OR a specific server ID (for development)
-- `HELPER_ROLE_NAME`: Role name that can manage deadlines (Optional, default "Helper")
-- `CLEANUP_INTERVAL_MINUTES`: How often to remove expired deadlines (Optional, default: 30)
-- `REMINDER_INTERVAL_MINUTES`: How often to check for reminder notifications (Optional, default: 30)
+**Required:**
+- `DISCORD_TOKEN`: Your bot token from the Bot tab in Discord Developer Portal
+- `CLIENT_ID`: Your application ID from General Information tab in Discord Developer Portal
 
-4. Start the bot:
+**Optional:**
+- `GUILD_ID`: Your test server ID for development (enables instant command updates)
+- `HELPER_ROLE_NAME`: Role name that can manage deadlines (default: "Helper")
+- `CLEANUP_INTERVAL_MINUTES`: Minutes between expired deadline removal (default: 30)
+- `REMINDER_INTERVAL_MINUTES`: Minutes between reminder checks (default: 30)
+
+4. Deploy slash commands:
+```bash
+npm run deploy
+```
+
+5. Start the bot:
 ```bash
 npm start
 ```
