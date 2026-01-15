@@ -1,9 +1,9 @@
 function extractCommandInputs(interaction) {
   return {
-    courseInput: interaction.options.getString('course'),
+    course: interaction.options.getString('course'),
     cohort: interaction.options.getRole('cohort'),
     assignment: interaction.options.getString('assignment'),
-    dateInput: interaction.options.getString('date')
+    date: interaction.options.getString('date')
   };
 }
 
@@ -25,7 +25,9 @@ function validateChannelFilter(channel) {
 }
 
 function findDeadline(deadlines, channel, cohort, assignment) {
-  return deadlines.find(d =>
+  if (!channel || !cohort) return undefined;
+
+  return deadlines.find(d => d &&
     d.courseChannelId === channel.id &&
     d.cohortId === cohort.id &&
     d.assignment === assignment

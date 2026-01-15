@@ -1,11 +1,18 @@
 const { replyEphemeral } = require('./interactions');
 
 function hasPermission(interaction) {
-  const hasHelper = interaction.member.roles.cache.some(
-    role => role.name === process.env.HELPER_ROLE_NAME
-  );
-  const hasAdmin = interaction.member.permissions.has('Administrator');
-  return hasHelper || hasAdmin;
+  if (interaction.member.roles.cache) {
+    const hasHelper = interaction.member.roles.cache.some(
+      role => role.name === process.env.HELPER_ROLE_NAME
+    );
+    if (hasHelper) return true;
+  }
+
+  if (interaction.member.permissions) {
+    return interaction.member.permissions.has('Administrator');
+  }
+
+  return false;
 }
 
 async function denyPermission(interaction) {
