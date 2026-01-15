@@ -115,7 +115,7 @@ describe('time utilities', () => {
       const date = new Date('2026-01-15T10:30:00.000Z');
       const result = discordTimestamp(date);
 
-      expect(result).toMatch(/^<t:\d+:F>$/);
+      expect(result).toMatch(/^<t:\d+:f>$/);
     });
 
     it('accepts custom format styles', () => {
@@ -131,14 +131,14 @@ describe('time utilities', () => {
       const expectedUnix = Math.floor(date.getTime() / 1000);
       const result = discordTimestamp(date);
 
-      expect(result).toBe(`<t:${expectedUnix}:F>`);
+      expect(result).toBe(`<t:${expectedUnix}:f>`);
     });
 
     it('floors milliseconds to whole seconds', () => {
       const date = new Date('1970-01-01T00:00:01.999Z');
       const result = discordTimestamp(date);
 
-      expect(result).toBe('<t:1:F>');
+      expect(result).toBe('<t:1:f>');
     });
 
     describe('edge cases', () => {
@@ -146,21 +146,21 @@ describe('time utilities', () => {
         const epoch = new Date(0);
         const result = discordTimestamp(epoch);
 
-        expect(result).toBe('<t:0:F>');
+        expect(result).toBe('<t:0:f>');
       });
 
       it('handles far future dates', () => {
         const farFuture = new Date('2099-12-31T23:59:59.999Z');
         const result = discordTimestamp(farFuture);
 
-        expect(result).toMatch(/^<t:\d+:F>$/);
+        expect(result).toMatch(/^<t:\d+:f>$/);
       });
 
       it('handles negative timestamps for pre-1970 dates', () => {
         const preEpoch = new Date('1969-12-31T23:59:59.000Z');
         const result = discordTimestamp(preEpoch);
 
-        expect(result).toMatch(/^<t:-?\d+:F>$/);
+        expect(result).toMatch(/^<t:-?\d+:f>$/);
       });
     });
   });

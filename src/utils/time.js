@@ -32,7 +32,8 @@ function toUnixSeconds(date) {
   return Math.floor(date.getTime() / 1000);
 }
 
-function discordTimestamp(date, style = 'F') {
+function discordTimestamp(date, style = 'f') {
+  if (!(date instanceof Date) || isNaN(date)) return 'Invalid date';
   return `<t:${toUnixSeconds(date)}:${style}>`;
 }
 
