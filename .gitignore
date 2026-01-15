@@ -1,6 +1,7 @@
 # User-defined
 deadlines.json
 messages.json
+/data/
 
 *.test.js.snap
 
