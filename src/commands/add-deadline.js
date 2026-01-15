@@ -45,14 +45,14 @@ module.exports = {
     if(!hasPermission(interaction)) 
       return denyPermission(interaction);
 
-    const { courseInput, cohort, assignment, dateInput } = extractCommandInputs(interaction);
+    const { course, cohort, assignment, date } = extractCommandInputs(interaction);
 
-    const channel = resolveChannel(interaction.guild, courseInput);
+    const channel = resolveChannel(interaction.guild, course);
     const channelValidation = validateChannelResolution(channel);
     if (!channelValidation.valid)
       return replyEphemeral(interaction, channelValidation.error);
 
-    const parsedDate = chrono.parseDate(dateInput);
+    const parsedDate = chrono.parseDate(date);
     if (!parsedDate) 
       return replyEphemeral(interaction, 'Invalid date format.');
 
@@ -66,6 +66,19 @@ module.exports = {
       return replyEphemeral(interaction, 'Could not create reminder location. The bot may be missing "Manage Channels" permission.');
 
     const deadlines = loadDeadlines();
+    
+    const duplicate = deadlines.find(d =>
+      d.courseChannelId === channel.id &&
+      d.cohortId === cohort.id &&
+      d.assignment === assignment
+    );
+
+    if (duplicate)
+      return replyEphemeral(
+        interaction,
+        `This deadline already exists. Use /remove-deadline first if you want to update it.`
+      );
+
     const newDeadline = {
       id: String(now().getTime()),
       courseChannelId: channel.id,

@@ -33,8 +33,8 @@ module.exports = {
     if(!hasPermission(interaction)) 
       return denyPermission(interaction);
 
-    const courseInput = interaction.options.getString('course');
-    const channel = resolveChannel(interaction.guild, courseInput);
+    const course = interaction.options.getString('course');
+    const channel = resolveChannel(interaction.guild, course);
     if (!channel || channel === "DUPLICATE") 
       return replyEphemeral(interaction, channel === "DUPLICATE" ? "Multiple channels found." : "Channel not found.");
 
