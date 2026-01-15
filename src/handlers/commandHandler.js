@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { REST, Routes } = require('discord.js');
 
 function getCommandFiles(commandsPath) {
   return fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -35,24 +34,17 @@ function loadCommands(client) {
     const filePath = path.join(commandsPath, file);
     const command = loadCommand(filePath);
   
-    if (client.commands.has(command.name))
-      throw new Error(`Duplicate command name '${command.name}' in ${filePath}`);
+    if(client) {
+      if (client.commands.has(command.name))
+        throw new Error(`Duplicate command name '${command.name}' in ${filePath}`);
 
-    client.commands.set(command.name, command);
+      client.commands.set(command.name, command);
+    }
+
     commandData.push(command.data);
   }
 
   return commandData;
 }
 
-async function registerCommands(client, commandData) {
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-
-  const route = process.env.GUILD_ID
-    ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
-    : Routes.applicationCommands(client.user.id);
-
-  await rest.put(route, { body: commandData });
-}
-
-module.exports = { validateCommand, loadCommands, registerCommands };
+module.exports = { validateCommand, loadCommands };
