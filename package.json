@@ -4,6 +4,7 @@
   "description": "Class Sync discord bot",
   "main": "index.js",
   "scripts": {
+    "deploy": "node deploy-commands.js",
     "start": "node src/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
