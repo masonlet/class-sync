@@ -19,4 +19,4 @@ function setupInteractionHandler(client) {
   });
 }
 
-module.exports = { setupInteractionHandler };
+module.exports = { handleCommandInteraction, setupInteractionHandler };
