@@ -1,6 +1,7 @@
 const { loadDeadlines } = require('../storage/deadlineStorage');
 const { loadMessages, saveMessages } = require('../storage/messageStorage');
 const { fromISO, discordTimestamp } = require('../utils/time');
+const { getActiveDeadlines } = require('../utils/expiration');
 
 function sortDeadlinesByDate(deadlines) {
   return deadlines.sort((a, b) => fromISO(a.dueDate) - fromISO(b.dueDate));
@@ -56,7 +57,10 @@ async function updateDeadlineMessage(guild, reminderLocationId) {
 
     const guildId = guild.id;
     const messages = loadMessages(guildId);
-    const deadlines = loadDeadlines(guildId).filter(d => d.reminderLocationId === reminderLocationId);
+
+    const locationDeadlines = loadDeadlines(guildId).filter(d => d.reminderLocationId === reminderLocationId);
+    const deadlines = getActiveDeadlines(locationDeadlines);
+    
     let content = buildDeadlineContent(deadlines);
 
     await updateOrCreateMessage(channel, content, guildId, messages, reminderLocationId);
