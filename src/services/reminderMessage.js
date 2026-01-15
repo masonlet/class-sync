@@ -24,14 +24,14 @@ function buildDeadlineContent(deadlines) {
   return content;
 }
 
-async function createAndPinMessage(channel, content, messages, reminderLocationId) {
+async function createAndPinMessage(channel, content, guildId, messages, reminderLocationId) {
   const newMessage = await channel.send(content);
   await newMessage.pin();
   messages[reminderLocationId] = newMessage.id;
-  saveMessages(messages);
+  saveMessages(guildId, messages);
 }
 
-async function updateOrCreateMessage(channel, content, messages, reminderLocationId) {
+async function updateOrCreateMessage(channel, content, guildId, messages, reminderLocationId) {
   const existingMessageId = messages[reminderLocationId];
 
   if (existingMessageId) {
@@ -39,10 +39,10 @@ async function updateOrCreateMessage(channel, content, messages, reminderLocatio
       const message = await channel.messages.fetch(existingMessageId);
       await message.edit(content);
     } catch (error) {
-      await createAndPinMessage(channel, content, messages, reminderLocationId);
+      await createAndPinMessage(channel, content, guildId, messages, reminderLocationId);
     }
   } else {
-    await createAndPinMessage(channel, content, messages, reminderLocationId);
+    await createAndPinMessage(channel, content, guildId, messages, reminderLocationId);
   }
 }
 
@@ -54,11 +54,12 @@ async function updateDeadlineMessage(guild, reminderLocationId) {
       return false;
     }
 
-    const messages = loadMessages();
-    const deadlines = loadDeadlines().filter(d => d.reminderLocationId === reminderLocationId);
+    const guildId = guild.id;
+    const messages = loadMessages(guildId);
+    const deadlines = loadDeadlines(guildId).filter(d => d.reminderLocationId === reminderLocationId);
     let content = buildDeadlineContent(deadlines);
 
-    await updateOrCreateMessage(channel, content, messages, reminderLocationId);
+    await updateOrCreateMessage(channel, content, guildId, messages, reminderLocationId);
 
     return true;
   } catch (error) {

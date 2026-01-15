@@ -47,7 +47,10 @@ describe('reminderMessage', () => {
           expect.stringContaining('**Upcoming Deadlines:**')
         );
         expect(newMessage.pin).toHaveBeenCalled();
-        expect(saveMessages).toHaveBeenCalledWith({ 'channel123': 'msg456' });
+        expect(saveMessages).toHaveBeenCalledWith(
+          'guild123', 
+          { 'channel123': 'msg456' }
+        );
       });
 
       it('updates existing message when message exists', async () => {
@@ -99,9 +102,10 @@ describe('reminderMessage', () => {
         expect(result).toBe(true);
         expect(channel.send).toHaveBeenCalled();
         expect(newMessage.pin).toHaveBeenCalled();
-        expect(saveMessages).toHaveBeenCalledWith({ 
-          'channel123': 'msg123' 
-        });
+        expect(saveMessages).toHaveBeenCalledWith(
+          'guild123',
+          { 'channel123': 'msg123' }
+        );
       });
 
       describe('message content formatting', () => {
@@ -494,10 +498,13 @@ describe('reminderMessage', () => {
 
         await updateDeadlineMessage(guild, 'channel123');
 
-        expect(saveMessages).toHaveBeenCalledWith({
-          'other-channel': 'msg-old',
-          'channel123': 'msg-new'
-        });
+        expect(saveMessages).toHaveBeenCalledWith(
+          'guild123',
+          { 
+            'other-channel': 'msg-old',
+            'channel123': 'msg-new' 
+          }
+        );
       });
     });
   });

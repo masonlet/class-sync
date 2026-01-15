@@ -10,23 +10,22 @@ async function createForumThread(courseChannel) {
   return dueDatesThread;
 }
 
-async function registerThreadMessage(thread) {
-  const messages = loadMessages();
+async function registerThreadMessage(thread, guildId) {
+  const messages = loadMessages(guildId);
   const starterMessage = await thread.fetchStarterMessage();
   if(!starterMessage) return;
-
   messages[thread.id] = starterMessage.id;
-  saveMessages(messages);
+  saveMessages(guildId, messages);
 }
 
-async function findOrCreateForumThread(courseChannel) {
+async function findOrCreateForumThread(courseChannel, guildId) {
   try {
     const threads = await courseChannel.threads.fetchActive();
     let dueDatesThread = threads.threads.find(t => t.name === 'Due Dates');
 
     if (!dueDatesThread) {
       dueDatesThread = await createForumThread(courseChannel);
-      await registerThreadMessage(dueDatesThread);
+      await registerThreadMessage(dueDatesThread, guildId);
     }
 
     return dueDatesThread.id;
@@ -62,7 +61,7 @@ async function findOrCreateTextChannel(guild, courseChannel, cohortName) {
 
 async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   if (isForumChannel(courseChannel)) 
-    return await findOrCreateForumThread(courseChannel);
+    return await findOrCreateForumThread(courseChannel, guild.id);
   
   if (isTextChannel(courseChannel)) 
     return await findOrCreateTextChannel(guild, courseChannel, cohortName);

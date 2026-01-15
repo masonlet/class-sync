@@ -65,7 +65,7 @@ module.exports = {
     if (!reminderLocationId) 
       return replyEphemeral(interaction, 'Could not create reminder location. The bot may be missing "Manage Channels" permission.');
 
-    const deadlines = loadDeadlines();
+    const deadlines = loadDeadlines(interaction.guildId);
     
     const duplicate = deadlines.find(d =>
       d.courseChannelId === channel.id &&
@@ -92,7 +92,7 @@ module.exports = {
     }
 
     deadlines.push(newDeadline);
-    saveDeadlines(deadlines);
+    saveDeadlines(interaction.guildId, deadlines);
     await updateDeadlineMessage(interaction.guild, reminderLocationId);
 
     return replyEphemeral(interaction, `Deadline added: ${assignment} for ${channel.name} (${cohort.name}) due ${discordTimestamp(parsedDate)}`);

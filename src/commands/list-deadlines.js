@@ -28,7 +28,7 @@ module.exports = {
     const courseFilter = interaction.options.getString('course');
     const cohortFilter = interaction.options.getRole('cohort');
 
-    let deadlines = loadDeadlines();
+    let deadlines = loadDeadlines(interaction.guildId);
 
     if(courseFilter) {
       const channel = resolveChannel(interaction.guild, courseFilter);
