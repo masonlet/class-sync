@@ -47,7 +47,10 @@ describe('reminderLocation', () => {
         name: 'Due Dates',
         message: { content: '**Upcoming Deadlines:**\n\nNo deadlines.' }
       });
-      expect(saveMessages).toHaveBeenCalledWith({ 'thread456': 'msg123' });
+      expect(saveMessages).toHaveBeenCalledWith(
+        'guild123', 
+        { 'thread456': 'msg123' }
+      );
     });
 
     it('does nothing if starter message is missing', async () => {

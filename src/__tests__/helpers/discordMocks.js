@@ -44,6 +44,7 @@ const makeThread = (id, name) => ({
 });
 
 const makeGuild = (channels = []) => ({
+  id: 'guild123',
   channels: {
     cache: new MockCollection(channels.map(c => [c.id, c])),
     fetch: jest.fn(),

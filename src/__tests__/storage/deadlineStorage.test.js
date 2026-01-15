@@ -1,13 +1,16 @@
 const { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } = require('../helpers/fsMocks');
-const { loadDeadlines, saveDeadlines, DEADLINES_FILE } = require('../../storage/deadlineStorage');
+const { loadDeadlines, saveDeadlines } = require('../../storage/deadlineStorage');
 const { expectEmptyAndLoggedError } = require('../helpers/assertions');
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  resetMocks();
-});
+const { getGuildDataPath } = require('../../storage/utils');
 
 describe('deadlineStorage', () => {
+  const GUILD_ID = '123456789';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    resetMocks();
+  });
+
   describe('loadDeadlines()', () => {
     it('loads and parses existing deadlines file', () => {
       const mockDeadlines = [{ 
@@ -16,25 +19,25 @@ describe('deadlineStorage', () => {
         assignment: 'Quiz 1', 
         date: '2026-01-01' 
       }];
-      mockFileExistsWithJson(DEADLINES_FILE, mockDeadlines);
-      expect(loadDeadlines()).toEqual(mockDeadlines);
+      const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+      mockFileExistsWithJson(deadlinesFile, mockDeadlines);
+      expect(loadDeadlines(GUILD_ID)).toEqual(mockDeadlines);
     }); 
 
     it('returns empty array when file does not exist', () => {
       mockFs.existsSync.mockReturnValue(false);
-      const result = loadDeadlines();
-      expect(result).toEqual([]);
+      expect(loadDeadlines(GUILD_ID)).toEqual([]);
       expect(mockFs.readFileSync).not.toHaveBeenCalled();
     });
 
     it('returns empty array and logs error on read failure', () => {
       mockReadError('permission denied');
-      expectEmptyAndLoggedError(loadDeadlines, 'Error loading deadlines');      
+      expectEmptyAndLoggedError(() => loadDeadlines(GUILD_ID), 'Error loading deadlines');      
     });
 
     it('returns empty array and logs error on JSON parse failure', () => {
       mockParseError();
-      expectEmptyAndLoggedError(loadDeadlines, 'Error loading deadlines');
+      expectEmptyAndLoggedError(() => loadDeadlines(GUILD_ID), 'Error loading deadlines');
     });
 
     describe('data integrity', () => {
@@ -46,10 +49,9 @@ describe('deadlineStorage', () => {
           date: '2026-01-01',
           extraField: 'preserved'
         }];
-        mockFileExistsWithJson(DEADLINES_FILE, deadlines);
-
-        const result = loadDeadlines();
-        expect(result[0].extraField).toBe('preserved');
+        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+        mockFileExistsWithJson(deadlinesFile, deadlines);
+        expect(loadDeadlines(GUILD_ID)[0].extraField).toBe('preserved');
       });
 
       it('handles malformed deadline objects', () => {
@@ -59,9 +61,9 @@ describe('deadlineStorage', () => {
           { courseChannelId: '1' },
           { courseChannelId: '2', cohortId: 'B', assignment: 'valid', date: '2026-01-01' }
         ];
-        mockFileExistsWithJson(DEADLINES_FILE, badDeadlines);
-        const result = loadDeadlines();
-        expect(result).toHaveLength(4);
+        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+        mockFileExistsWithJson(deadlinesFile, badDeadlines);
+        expect(loadDeadlines(GUILD_ID)).toHaveLength(4);
       });
 
       it('handles very large deadline arrays', () => {
@@ -74,9 +76,9 @@ describe('deadlineStorage', () => {
             date: `2026-01-01`  
           });
         }
-        mockFileExistsWithJson(DEADLINES_FILE, largeDeadlines);
-        const result = loadDeadlines();
-        expect(result).toHaveLength(5000);
+        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+        mockFileExistsWithJson(deadlinesFile, largeDeadlines);
+        expect(loadDeadlines(GUILD_ID)).toHaveLength(5000);
       });
     });
   });
@@ -89,15 +91,16 @@ describe('deadlineStorage', () => {
         assignment: 'Quiz 1', 
         date: '2026-12-12' 
       }];
-      saveDeadlines(deadlines);
-      expectWriteFormatted(DEADLINES_FILE, deadlines);
+     const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+      saveDeadlines(GUILD_ID, deadlines);
+      expectWriteFormatted(deadlinesFile, deadlines);
     });
 
     it('logs error when write fails', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       try {
         mockWriteError('disk full');
-        saveDeadlines([]);
+        saveDeadlines(GUILD_ID, []);
         expect(console.error).toHaveBeenCalledWith(
           'Error saving deadlines:',
           expect.any(Error)
@@ -109,9 +112,10 @@ describe('deadlineStorage', () => {
     });
 
     it('handles empty array', () => {
-      saveDeadlines([]);
+      const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+      saveDeadlines(GUILD_ID, []);
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-        DEADLINES_FILE,
+        deadlinesFile,
         '[]'
       );
     });

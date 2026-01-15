@@ -41,7 +41,7 @@ module.exports = {
     const cohort = interaction.options.getRole('cohort');
     const assignment = interaction.options.getString('assignment');
 
-    const deadlines = loadDeadlines();
+    const deadlines = loadDeadlines(interaction.guildId);
     const deadline = deadlines.find(d =>
       d.courseChannelId === channel.id &&
       d.cohortId === cohort.id &&
@@ -52,7 +52,7 @@ module.exports = {
       return replyEphemeral(interaction, 'No matching deadline found.');
 
     const filteredDeadlines = deadlines.filter(d => d.id !== deadline.id);
-    saveDeadlines(filteredDeadlines);
+    saveDeadlines(interaction.guildId, filteredDeadlines);
 
     await updateDeadlineMessage(interaction.guild, deadline.reminderLocationId);
     return replyEphemeral(interaction, `Deadline removed: ${assignment} for ${channel.name} (${cohort.name})`);

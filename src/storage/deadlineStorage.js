@@ -1,12 +1,11 @@
 const fs = require('fs');
-const path = require('path');
+const { getGuildDataPath, ensureGuildDir } = require('./utils');
 
-const DEADLINES_FILE = path.join(__dirname, '../../deadlines.json');
-
-function loadDeadlines() {
+function loadDeadlines(guildId) {
   try {
-    if(fs.existsSync(DEADLINES_FILE)) {
-      const data = fs.readFileSync(DEADLINES_FILE, 'utf8');
+    const deadlinesFile = getGuildDataPath(guildId, 'deadlines.json');
+    if(fs.existsSync(deadlinesFile)) {
+      const data = fs.readFileSync(deadlinesFile, 'utf8');
       const parsed = JSON.parse(data);
       return Array.isArray(parsed) ? parsed : [];
     }
@@ -16,12 +15,14 @@ function loadDeadlines() {
   return [];
 }
 
-function saveDeadlines(deadlines) {
+function saveDeadlines(guildId, deadlines) {
   try {
-    fs.writeFileSync(DEADLINES_FILE, JSON.stringify(deadlines, null, 2));
+    ensureGuildDir(guildId);
+    const deadlinesFile = getGuildDataPath(guildId, 'deadlines.json');
+    fs.writeFileSync(deadlinesFile, JSON.stringify(deadlines, null, 2));
   } catch(error) {
     console.error('Error saving deadlines:', error);
   }
 }
 
-module.exports = { loadDeadlines, saveDeadlines, DEADLINES_FILE };
+module.exports = { loadDeadlines, saveDeadlines };
