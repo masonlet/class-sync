@@ -93,7 +93,12 @@ module.exports = {
       assignment,
       dueDate: toISO(parsedDate),
       createdAt: toISO(now()),
-      reminderLocationId
+      reminderLocationId,
+      remindersSent: {
+        '24h': false,
+        '8h': false,
+        '1h': false
+      }
     }
 
     deadlines.push(newDeadline);
