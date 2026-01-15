@@ -7,10 +7,13 @@ function getCommandFiles(commandsPath) {
 }
 
 function validateCommand(command, filePath) {
-  if (!command?.name)
+  if (!command)
+    throw new Error(`Invalid command module: ${filePath}`);
+
+  if (!command.name)
     throw new Error(`Command missing name: ${filePath}`);
 
-  if (!command?.data) 
+  if (!command.data) 
     throw new Error(`Command missing data: ${filePath}`);
 
   if (typeof command.handle !== 'function') 
@@ -31,6 +34,10 @@ function loadCommands(client) {
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = loadCommand(filePath);
+  
+    if (client.commands.has(command.name))
+      throw new Error(`Duplicate command name '${command.name}' in ${filePath}`);
+
     client.commands.set(command.name, command);
     commandData.push(command.data);
   }
@@ -48,4 +55,4 @@ async function registerCommands(client, commandData) {
   await rest.put(route, { body: commandData });
 }
 
-module.exports = { loadCommands, registerCommands };
+module.exports = { validateCommand, loadCommands, registerCommands };
