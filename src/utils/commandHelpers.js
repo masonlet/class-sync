@@ -1,3 +1,6 @@
+const { isLimited, getRemainingTime } = require('../utils/ratelimiter.js');
+const { replyEphemeral } = require('./interactions.js');
+
 function extractCommandInputs(interaction) {
   return {
     course: interaction.options.getString('course'),
@@ -34,9 +37,20 @@ function findDeadline(deadlines, channel, cohort, assignment) {
   );
 }
 
+async function checkRateLimit(interaction) {
+  const userId = interaction.user.id;
+  const commandName = interaction.commandName;
+  if (isLimited(userId, commandName)) {
+    const remaining = getRemainingTime(userId, commandName);
+    return replyEphemeral(interaction, `Slow down! Try again in ${remaining} seconds.`);
+  }
+  return true;
+}
+
 module.exports = { 
   extractCommandInputs, 
   validateChannelResolution,
   validateChannelFilter,
-  findDeadline 
+  findDeadline,
+  checkRateLimit
 };

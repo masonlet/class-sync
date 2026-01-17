@@ -3,8 +3,8 @@ const { loadDeadlines } = require('../storage/deadlineStorage');
 const { resolveChannel } = require('../services/channels');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
 const { fromISO, discordTimestamp } = require('../utils/time');
-const { validateChannelFilter } = require('../utils/commandHelpers');
-const { getActiveDeadlines } = require('../utils/expiration')
+const { validateChannelFilter, checkRateLimit } = require('../utils/commandHelpers');
+const { getActiveDeadlines } = require('../utils/expiration');
 
 module.exports = {
   name: 'list-deadlines',
@@ -25,6 +25,9 @@ module.exports = {
 
   async handle(interaction) {
     await deferEphemeral(interaction);    
+
+    const rateLimitValid = await checkRateLimit(interaction);
+    if (!rateLimitValid) return;
 
     const courseFilter = interaction.options.getString('course');
     const cohortFilter = interaction.options.getRole('cohort');
