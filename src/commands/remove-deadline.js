@@ -4,6 +4,7 @@ const { resolveChannel } = require('../services/channels');
 const { updateDeadlineMessage } = require('../services/reminderMessage');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
+const { checkRateLimit } = require('../utils/commandHelpers');
 
 module.exports = {
   name: 'remove-deadline',
@@ -29,6 +30,9 @@ module.exports = {
 
   async handle(interaction) {
     await deferEphemeral(interaction); 
+
+    const rateLimitValid = await checkRateLimit(interaction);
+    if (!rateLimitValid) return;
 
     if(!hasPermission(interaction)) 
       return denyPermission(interaction);

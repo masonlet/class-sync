@@ -6,7 +6,8 @@ const { getOrCreateReminderLocation } = require('../services/reminderLocation');
 const { updateDeadlineMessage } = require('../services/reminderMessage');
 const { 
   extractCommandInputs, 
-  validateChannelResolution
+  validateChannelResolution,
+  checkRateLimit
 } = require('../utils/commandHelpers');
 const { hasPermission, denyPermission } = require('../utils/permissions');
 const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
@@ -42,6 +43,9 @@ module.exports = {
 
   async handle(interaction) {
     await deferEphemeral(interaction);
+
+    const rateLimitValid = await checkRateLimit(interaction);
+    if (!rateLimitValid) return;
 
     if(!hasPermission(interaction)) 
       return denyPermission(interaction);
