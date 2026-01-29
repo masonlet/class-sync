@@ -1,7 +1,7 @@
-const { validateDeadlineTime } = require('../../utils/validation');
+const { validateDeadlineTime } = require('../../src/utils/validation');
 
-jest.mock('../../utils/time');
-const { now } = require('../../utils/time');
+jest.mock('../../src/utils/time');
+const { now } = require('../../src/utils/time');
 
 describe('validateDeadlineTime', () => {
   beforeEach(() => {

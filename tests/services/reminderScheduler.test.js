@@ -2,12 +2,11 @@ const {
   getHoursUntilDeadline,
   shouldSendReminder,
   formatNormalReminder,
-  formatLateReminder,
-  REMINDER_WINDOWS
-} = require('../../services/reminderScheduler');
+  formatLateReminder
+} = require('../../src/services/reminderScheduler');
+const { now, fromISO, discordTimestamp } = require('../../src/utils/time');
 
-jest.mock('../../utils/time');
-const { now, fromISO, discordTimestamp } = require('../../utils/time');
+jest.mock('../../src/utils/time');
 
 describe('reminderScheduler', () => {
   beforeEach(() => {

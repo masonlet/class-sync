@@ -1,7 +1,9 @@
-const { deferEphemeral, replyEphemeral } = require('../../utils/interactions');
 const { MessageFlags } = require('discord.js');
+
 const { makeInteraction } = require('../helpers/interactions');
 const { expectIgnoreErrorCode, expectRethrowsUnknownError } = require('../helpers/assertions');
+
+const { deferEphemeral, replyEphemeral } = require('../../src/utils/interactions');
 
 describe('interactions', () => {
   describe('deferEphemeral()', () => {

@@ -1,4 +1,4 @@
-const { handleCommandInteraction } = require('../../handlers/eventHandler');
+const { handleCommandInteraction } = require('../../src/handlers/eventHandler');
 
 describe('handleCommandInteraction', () => {
   let mockClient;

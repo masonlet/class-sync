@@ -1,9 +1,11 @@
 const { ChannelType } = require('discord.js');
-const { getOrCreateReminderLocation } = require('../../services/reminderLocation');
-const { loadMessages, saveMessages } = require('../../storage/messageStorage');
+
 const { MockCollection, makeChannel, makeThread, makeGuild } = require('../helpers/discordMocks');
 
-jest.mock('../../storage/messageStorage');
+const { getOrCreateReminderLocation } = require('../../src/services/reminderLocation');
+const { loadMessages, saveMessages } = require('../../src/storage/messageStorage');
+
+jest.mock('../../src/storage/messageStorage');
 
 describe('reminderLocation', () => {
   beforeEach(() => {

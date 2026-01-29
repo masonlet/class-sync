@@ -1,6 +1,7 @@
 const fs = require('fs');
-const { loadMessages, saveMessages } = require('../../storage/messageStorage');
-const { getGuildDataPath } = require('../../storage/utils');
+
+const { loadMessages, saveMessages } = require('../../src/storage/messageStorage');
+const { getGuildDataPath } = require('../../src/storage/utils');
 
 jest.mock('fs');
 

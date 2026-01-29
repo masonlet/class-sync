@@ -1,12 +1,13 @@
-const { updateDeadlineMessage } = require('../../services/reminderMessage');
-const { loadDeadlines } = require('../../storage/deadlineStorage');
-const { loadMessages, saveMessages } = require('../../storage/messageStorage');
-const { fromISO, discordTimestamp } = require('../../utils/time');
 const { makeChannel, makeGuild } = require('../helpers/discordMocks');
 
-jest.mock('../../storage/deadlineStorage');
-jest.mock('../../storage/messageStorage');
-jest.mock('../../utils/time');
+const { updateDeadlineMessage } = require('../../src/services/reminderMessage');
+const { loadDeadlines } = require('../../src/storage/deadlineStorage');
+const { loadMessages, saveMessages } = require('../../src/storage/messageStorage');
+const { fromISO, discordTimestamp } = require('../../src/utils/time');
+
+jest.mock('../../src/storage/deadlineStorage');
+jest.mock('../../src/storage/messageStorage');
+jest.mock('../../src/utils/time');
 
 describe('reminderMessage', () => {
   beforeEach(() => {

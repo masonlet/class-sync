@@ -1,8 +1,7 @@
 // Centralized fs mocking for storage tests
+
 const fs = require('fs');
-
 jest.mock('fs');
-
 const mockFs = jest.requireMock('fs');
 
 const resetMocks = () => {

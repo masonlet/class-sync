@@ -1,6 +1,8 @@
 const { ChannelType } = require('discord.js');
-const { resolveChannel, isForumChannel, isTextChannel } = require('../../services/channels');
-const { MockCollection, makeChannel, makeGuild } = require('../helpers/discordMocks');
+
+const { makeChannel, makeGuild } = require('../helpers/discordMocks');
+
+const { resolveChannel, isForumChannel, isTextChannel } = require('../../src/services/channels');
 
 describe('channels', () => {
   describe('resolveChannel()', () => {

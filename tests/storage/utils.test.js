@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { getGuildDataPath, ensureGuildDir, DATA_DIR } = require('../../storage/utils');
+
+const { getGuildDataPath, ensureGuildDir, DATA_DIR } = require('../../src/storage/utils');
 
 jest.mock('fs');
 

@@ -1,13 +1,12 @@
-const { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } = require('../../services/expirationCleanup');
-const { getAllDeadlines, removeDeadline } = require('../../storage/deadlineStorage');
-const { getExpiredDeadlines } = require('../../utils/expiration');
+const { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } = require('../../src/services/expirationCleanup');
+const { getAllDeadlines, removeDeadline } = require('../../src/storage/deadlineStorage');
+const { getExpiredDeadlines } = require('../../src/utils/expiration');
 
-jest.mock('../../storage/deadlineStorage', () => ({
+jest.mock('../../src/storage/deadlineStorage', () => ({
   getAllDeadlines: jest.fn(),
   removeDeadline: jest.fn(),
 }));
-
-jest.mock('../../utils/expiration', () => ({
+jest.mock('../../src/utils/expiration', () => ({
   getExpiredDeadlines: jest.fn(),
 }));
 

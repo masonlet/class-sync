@@ -1,4 +1,4 @@
-const { validateCommand } = require('../../handlers/commandHandler');
+const { validateCommand } = require('../../src/handlers/commandHandler');
 
 describe('validateCommand', () => {
   const mockPath = '/commands/test.js';

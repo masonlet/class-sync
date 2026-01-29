@@ -1,4 +1,4 @@
-const { isLimited, getRemainingTime, resetCooldowns, cleanup } = require('../../utils/ratelimiter');
+const { isLimited, getRemainingTime, resetCooldowns, cleanup } = require('../../src/utils/ratelimiter');
 
 describe('rateLimiter', () => {
   beforeEach(() => {

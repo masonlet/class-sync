@@ -1,7 +1,7 @@
-const { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } = require('../../utils/expiration');
+const { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } = require('../../src/utils/expiration');
+const { now, fromISO } = require('../../src/utils/time');
 
-jest.mock('../../utils/time');
-const { now, fromISO } = require('../../utils/time');
+jest.mock('../../src/utils/time');
 
 describe('expiration utils', () => {
   beforeEach(() => {

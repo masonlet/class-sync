@@ -1,8 +1,9 @@
-const { hasPermission, denyPermission } = require('../../utils/permissions');
-const { replyEphemeral } = require('../../utils/interactions');
 const { makeInteraction, makeHelperUser, makeAdminUser, makeRegularUser } = require('../helpers/interactions');
 
-jest.mock('../../utils/interactions');
+const { hasPermission, denyPermission } = require('../../src/utils/permissions');
+const { replyEphemeral } = require('../../src/utils/interactions');
+
+jest.mock('../../src/utils/interactions');
 
 describe('permissions', () => {
   const originalEnv = process.env.HELPER_ROLE_NAME;
