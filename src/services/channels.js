@@ -1,4 +1,4 @@
-const { ChannelType } = require('discord.js');
+import { ChannelType } from 'discord.js';
 
 function getEligibleChannels(guild) {
   return guild.channels.cache.filter(c =>
@@ -47,7 +47,7 @@ function tryKeywordMatch(channels, input) {
   return keywordMatches.first() || null;
 }
 
-function resolveChannel(guild, courseInput) {
+export function resolveChannel(guild, courseInput) {
   if (!courseInput || !guild) return null;
 
   const channels = getEligibleChannels(guild);
@@ -61,7 +61,5 @@ function resolveChannel(guild, courseInput) {
   return tryKeywordMatch(channels, courseInput);
 }
 
-const isForumChannel = (channel) => channel?.type === ChannelType.GuildForum;
-const isTextChannel = (channel) => channel?.type === ChannelType.GuildText;
-
-module.exports = { resolveChannel, isForumChannel, isTextChannel };
+export const isForumChannel = (channel) => channel?.type === ChannelType.GuildForum;
+export const isTextChannel = (channel) => channel?.type === ChannelType.GuildText;

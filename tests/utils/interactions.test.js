@@ -1,7 +1,11 @@
-const { deferEphemeral, replyEphemeral } = require('../../utils/interactions');
-const { MessageFlags } = require('discord.js');
-const { makeInteraction } = require('../helpers/interactions');
-const { expectIgnoreErrorCode, expectRethrowsUnknownError } = require('../helpers/assertions');
+import { describe, it, expect } from 'vitest';
+
+import { MessageFlags } from 'discord.js';
+
+import { makeInteraction } from '../helpers/interactions';
+import { expectIgnoreErrorCode } from '../helpers/assertions';
+
+import { deferEphemeral, replyEphemeral } from '../../src/utils/interactions';
 
 describe('interactions', () => {
   describe('deferEphemeral()', () => {

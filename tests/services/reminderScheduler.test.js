@@ -1,13 +1,9 @@
-const {
-  getHoursUntilDeadline,
-  shouldSendReminder,
-  formatNormalReminder,
-  formatLateReminder,
-  REMINDER_WINDOWS
-} = require('../../services/reminderScheduler');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('../../utils/time');
-const { now, fromISO, discordTimestamp } = require('../../utils/time');
+import { getHoursUntilDeadline, shouldSendReminder, formatNormalReminder, formatLateReminder } from '../../src/services/reminderScheduler';
+import { now, fromISO, discordTimestamp } from '../../src/utils/time';
+
+vi.mock('../../src/utils/time');
 
 describe('reminderScheduler', () => {
   beforeEach(() => {

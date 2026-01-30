@@ -1,7 +1,9 @@
-const { validateDeadlineTime } = require('../../utils/validation');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('../../utils/time');
-const { now } = require('../../utils/time');
+import { validateDeadlineTime } from '../../src/utils/validation';
+import { now } from '../../src/utils/time';
+
+vi.mock('../../src/utils/time');
 
 describe('validateDeadlineTime', () => {
   beforeEach(() => {

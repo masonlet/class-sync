@@ -1,7 +1,9 @@
-const { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } = require('../../utils/expiration');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('../../utils/time');
-const { now, fromISO } = require('../../utils/time');
+import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
+import { now, fromISO } from '../../src/utils/time';
+
+vi.mock('../../src/utils/time');
 
 describe('expiration utils', () => {
   beforeEach(() => {

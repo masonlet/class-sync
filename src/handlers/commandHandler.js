@@ -1,12 +1,16 @@
-const fs = require('fs');
-const path = require('path');
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL, fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function getCommandFiles(commandsPath) {
   return fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 }
 
-function validateCommand(command, filePath) {
-  if (!command)
+export function validateCommand(command, filePath) {
+  if (!command) 
     throw new Error(`Invalid command module: ${filePath}`);
 
   if (!command.name)
@@ -19,20 +23,24 @@ function validateCommand(command, filePath) {
     throw new Error(`Command missing handle(): ${filePath}`);
 }
 
-function loadCommand(filePath) {
-  const command = require(filePath);
+async function loadCommand(filePath) {
+  const url = pathToFileURL(filePath).href;
+
+  const mod = await import(url);
+  const command = mod.default ?? mod;
+
   validateCommand(command, filePath);
   return command;
 }
 
-function loadCommands(client) {
+export async function loadCommands(client) {
   const commandsPath = path.join(__dirname, '..', 'commands');
   const commandFiles = getCommandFiles(commandsPath);
   const commandData = [];
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const command = loadCommand(filePath);
+    const command = await loadCommand(filePath);
   
     if(client) {
       if (client.commands.has(command.name))
@@ -46,5 +54,3 @@ function loadCommands(client) {
 
   return commandData;
 }
-
-module.exports = { validateCommand, loadCommands };

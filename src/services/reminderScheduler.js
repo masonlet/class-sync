@@ -1,7 +1,7 @@
-const { getAllDeadlines, saveDeadlines } = require('../storage/deadlineStorage');
-const { fromISO, now, discordTimestamp } = require('../utils/time');
+import { loadDeadlines, saveDeadlines } from '../storage/deadlineStorage.js';
+import { fromISO, now, discordTimestamp } from '../utils/time.js';
 
-const REMINDER_WINDOWS = {
+export const REMINDER_WINDOWS = {
   '24h': {
     normal: { min: 23, max: 24 },
     late: { min: 17, max: 23 },
@@ -21,7 +21,7 @@ const REMINDER_WINDOWS = {
 
 let reminderInterval = null;
 
-function getHoursUntilDeadline(date) {
+export function getHoursUntilDeadline(date) {
   const due = fromISO(date);
   const currentTime = now();
   const msUntilDue = due - currentTime;
@@ -32,7 +32,7 @@ function isInWindow(hours, window) {
   return hours >= window.min && hours <= window.max;
 }
 
-function shouldSendReminder(hoursUntilDue, reminderType, alreadySent) {
+export function shouldSendReminder(hoursUntilDue, reminderType, alreadySent) {
   if (alreadySent) 
     return { shouldSend: false, isLate: false };
 
@@ -53,16 +53,14 @@ function shouldSendReminder(hoursUntilDue, reminderType, alreadySent) {
   return { shouldSend: false, isLate: false };
 }
 
-function formatNormalReminder(deadline, reminderType) {
-  const dueTimestamp = Math.floor(fromISO(deadline.dueDate).getTime() / 1000);
-
+export  function formatNormalReminder(deadline) {
   return `<@&${deadline.cohortId}> Deadline Reminder\n\n` +
          `**Assignment:** ${deadline.assignment}\n` +
          `**Course:** ${deadline.courseChannelName}\n` +
          `**Due:** ${discordTimestamp(fromISO(deadline.dueDate))} (${discordTimestamp(fromISO(deadline.dueDate), 'R')})\n\n`;
 }
 
-function formatLateReminder(deadline, reminderType) {
+export function formatLateReminder(deadline, reminderType) {
   const timeLabel = {
     '24h': '24-Hour',
     '8h': '8-Hour',
@@ -86,7 +84,7 @@ async function sendReminder(guild, deadline, reminderType, isLate) {
 
     const message = isLate
       ? formatLateReminder(deadline, reminderType)
-      : formatNormalReminder(deadline, reminderType);
+      : formatNormalReminder(deadline);
 
     await channel.send(message);
     console.log(`Sent ${isLate ? 'late' : 'normal'} ${reminderType} reminder for: ${deadline.assignment}`);
@@ -121,13 +119,13 @@ async function processDeadlineReminders(guild, deadline) {
   return anySent;
 }
 
-async function checkAndSendReminders(guild) {
+export async function checkAndSendReminders(guild) {
   try {
-    const allDeadlines = getAllDeadlines(guild.id);
+    const allDeadlines = loadDeadlines(guild.id);
     let sentCount = 0;
 
     for (const deadline of allDeadlines) {
-      const sent = await processDeadlineReminders(guild, deadline, allDeadlines);
+      const sent = await processDeadlineReminders(guild, deadline);
       if (sent) sentCount++;
     }
 
@@ -141,7 +139,7 @@ async function checkAndSendReminders(guild) {
   }
 }
 
-function startReminderJob(client, intervalMinutes = 30) {
+export function startReminderJob(client, intervalMinutes = 30) {
   if (reminderInterval) {
     console.log('Reminder job already running');
     return;
@@ -160,21 +158,10 @@ function startReminderJob(client, intervalMinutes = 30) {
   }, intervalMs)
 }
 
-function stopReminderJob() {
+export function stopReminderJob() {
   if (reminderInterval) {
     clearInterval(reminderInterval);
     reminderInterval = null;
     console.log('Stopped reminder job');
   }
 }
-
-module.exports = {
-  checkAndSendReminders,
-  startReminderJob,
-  stopReminderJob,
-  getHoursUntilDeadline,
-  shouldSendReminder,
-  formatNormalReminder,
-  formatLateReminder,
-  REMINDER_WINDOWS
-};

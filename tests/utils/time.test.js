@@ -1,4 +1,6 @@
-const { now, toISO, fromISO, discordTimestamp } = require('../../utils/time');
+import { describe, it, expect } from 'vitest';
+
+import { now, toISO, fromISO, discordTimestamp } from '../../src/utils/time';
 
 describe('time utilities', () => {
   describe('now()', () => {

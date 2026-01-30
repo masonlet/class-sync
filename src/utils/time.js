@@ -1,12 +1,12 @@
-function now() {
+export function now() {
   return new Date();
 }
 
-function toISO(date) {
+export function toISO(date) {
   return date.toISOString();
 }
 
-function fromISO(iso) {
+export function fromISO(iso) {
   const date = new Date(iso);
 
   const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -32,9 +32,7 @@ function toUnixSeconds(date) {
   return Math.floor(date.getTime() / 1000);
 }
 
-function discordTimestamp(date, style = 'f') {
+export function discordTimestamp(date, style = 'f') {
   if (!(date instanceof Date) || isNaN(date)) return 'Invalid date';
   return `<t:${toUnixSeconds(date)}:${style}>`;
 }
-
-module.exports = { now, toISO, fromISO, discordTimestamp };

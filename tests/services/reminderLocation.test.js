@@ -1,13 +1,17 @@
-const { ChannelType } = require('discord.js');
-const { getOrCreateReminderLocation } = require('../../services/reminderLocation');
-const { loadMessages, saveMessages } = require('../../storage/messageStorage');
-const { MockCollection, makeChannel, makeThread, makeGuild } = require('../helpers/discordMocks');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('../../storage/messageStorage');
+import { ChannelType } from 'discord.js';
+
+import { MockCollection, makeChannel, makeThread, makeGuild } from '../helpers/discordMocks';
+
+import { getOrCreateReminderLocation } from '../../src/services/reminderLocation';
+import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
+
+vi.mock('../../src/storage/messageStorage');
 
 describe('reminderLocation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('forum channels', () => {
@@ -76,7 +80,7 @@ describe('reminderLocation', () => {
       forumChannel.threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
       forumChannel.threads.create.mockRejectedValue(new Error('Permission denied'));
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const guild = makeGuild([forumChannel]);
       const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
@@ -191,7 +195,7 @@ describe('reminderLocation', () => {
       const guild = makeGuild([courseChannel]);
 
       guild.channels.create.mockRejectedValue(new Error('Permission denied'));
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
       expect(result).toBeNull();
@@ -257,7 +261,7 @@ describe('reminderLocation', () => {
       timeoutError.code = 'ETIMEDOUT';
       forumChannel.threads.create.mockRejectedValue(timeoutError);
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const guild = makeGuild([forumChannel]);
 
       const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');

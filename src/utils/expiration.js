@@ -1,6 +1,6 @@
-const { fromISO, now } = require('./time');
+import { fromISO, now } from './time.js';
 
-function isDeadlineExpired(deadline) {
+export function isDeadlineExpired(deadline) {
   if (!deadline || !deadline.dueDate)
     return false;
 
@@ -8,16 +8,10 @@ function isDeadlineExpired(deadline) {
   return now() >= dueDate;
 }
 
-function getActiveDeadlines(deadlines) {
+export function getActiveDeadlines(deadlines) {
   return deadlines.filter(d => !isDeadlineExpired(d));
 }
 
-function getExpiredDeadlines(deadlines) {
+export function getExpiredDeadlines(deadlines) {
   return deadlines.filter(d => isDeadlineExpired(d));
 }
-
-module.exports = {
-  isDeadlineExpired,
-  getActiveDeadlines,
-  getExpiredDeadlines
-};

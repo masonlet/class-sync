@@ -1,8 +1,11 @@
-const { hasPermission, denyPermission } = require('../../utils/permissions');
-const { replyEphemeral } = require('../../utils/interactions');
-const { makeInteraction, makeHelperUser, makeAdminUser, makeRegularUser } = require('../helpers/interactions');
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 
-jest.mock('../../utils/interactions');
+import { makeInteraction, makeHelperUser, makeAdminUser, makeRegularUser } from '../helpers/interactions';
+
+import { hasPermission, denyPermission } from '../../src/utils/permissions';
+import { replyEphemeral } from '../../src/utils/interactions';
+
+vi.mock('../../src/utils/interactions');
 
 describe('permissions', () => {
   const originalEnv = process.env.HELPER_ROLE_NAME;
@@ -49,7 +52,7 @@ describe('permissions', () => {
 
     it('returns false when roles cache is empty', () => {
       const interaction = makeRegularUser();
-      interaction.member.roles.cache.some = jest.fn(() => false);
+      interaction.member.roles.cache.some = vi.fn(() => false);
       const result = hasPermission(interaction);
       expect(result).toBe(false);
     });

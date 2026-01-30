@@ -1,8 +1,8 @@
-const { now } = require('./time');
+import { now } from './time.js';
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
-function validateDeadlineTime(date) {
+export function validateDeadlineTime(date) {
   if (!date || !(date instanceof Date) || isNaN(date))
     return { valid: false, error: 'Invalid date format.' };
 
@@ -13,5 +13,3 @@ function validateDeadlineTime(date) {
 
   return { valid: true };
 }
-
-module.exports = { validateDeadlineTime };

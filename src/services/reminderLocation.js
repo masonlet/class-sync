@@ -1,6 +1,6 @@
-const { ChannelType } = require('discord.js');
-const { isForumChannel, isTextChannel } = require('./channels');
-const { loadMessages, saveMessages } = require('../storage/messageStorage');
+import { ChannelType } from 'discord.js';
+import { isForumChannel, isTextChannel } from './channels.js';
+import { loadMessages, saveMessages } from '../storage/messageStorage.js';
 
 async function createForumThread(courseChannel) {
   const dueDatesThread = await courseChannel.threads.create({
@@ -59,7 +59,7 @@ async function findOrCreateTextChannel(guild, courseChannel, cohortName) {
   return dueDatesChannel.id;
 }
 
-async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
+export async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
   if (isForumChannel(courseChannel)) 
     return await findOrCreateForumThread(courseChannel, guild.id);
   
@@ -68,5 +68,3 @@ async function getOrCreateReminderLocation(guild, courseChannel, cohortName) {
 
   return null;
 }
-
-module.exports = { getOrCreateReminderLocation };

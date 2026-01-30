@@ -1,6 +1,6 @@
-const { replyEphemeral } = require('./interactions');
+import { replyEphemeral } from './interactions.js';
 
-function hasPermission(interaction) {
+export function hasPermission(interaction) {
   if (interaction.member.roles.cache) {
     const hasHelper = interaction.member.roles.cache.some(
       role => role.name === process.env.HELPER_ROLE_NAME
@@ -15,8 +15,6 @@ function hasPermission(interaction) {
   return false;
 }
 
-async function denyPermission(interaction) {
+export async function denyPermission(interaction) {
    return replyEphemeral(interaction, `You need the ${process.env.HELPER_ROLE_NAME} role to use this.`);
 }
-
-module.exports = { hasPermission, denyPermission };

@@ -1,16 +1,19 @@
-const { updateDeadlineMessage } = require('../../services/reminderMessage');
-const { loadDeadlines } = require('../../storage/deadlineStorage');
-const { loadMessages, saveMessages } = require('../../storage/messageStorage');
-const { fromISO, discordTimestamp } = require('../../utils/time');
-const { makeChannel, makeGuild } = require('../helpers/discordMocks');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('../../storage/deadlineStorage');
-jest.mock('../../storage/messageStorage');
-jest.mock('../../utils/time');
+import { makeChannel, makeGuild } from '../helpers/discordMocks';
+
+import { updateDeadlineMessage } from '../../src/services/reminderMessage';
+import { loadDeadlines } from '../../src/storage/deadlineStorage';
+import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
+import { fromISO, discordTimestamp } from '../../src/utils/time';
+
+vi.mock('../../src/storage/deadlineStorage');
+vi.mock('../../src/storage/messageStorage');
+vi.mock('../../src/utils/time');
 
 describe('reminderMessage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     fromISO.mockImplementation((isoString) => new Date(isoString));
     discordTimestamp.mockImplementation((date, format = 'f') => {
       if (format === 'R') return '<t:123456:R>';
@@ -33,7 +36,7 @@ describe('reminderMessage', () => {
       
         const newMessage = {
           id: 'msg456',
-          pin: jest.fn().mockResolvedValue(undefined)
+          pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.send.mockResolvedValue(newMessage);
@@ -66,7 +69,7 @@ describe('reminderMessage', () => {
 
         const existingMessage = {
           id: 'msg456',
-          edit: jest.fn().mockResolvedValue(undefined)
+          edit: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.messages.fetch.mockResolvedValue(existingMessage);
@@ -89,7 +92,7 @@ describe('reminderMessage', () => {
 
         const newMessage = {
           id: 'msg123',
-          pin: jest.fn().mockResolvedValue(undefined)
+          pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.messages.fetch.mockRejectedValue(new Error('Unknown Message'));
@@ -115,7 +118,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg222',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -143,7 +146,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg333',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -171,7 +174,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg333',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -216,7 +219,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg321',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -254,7 +257,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg123',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -289,7 +292,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg666',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -324,7 +327,7 @@ describe('reminderMessage', () => {
 
           const newMessage = {
             id: 'msg666',
-            pin: jest.fn().mockResolvedValue(undefined)
+            pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
           channel.send.mockResolvedValue(newMessage);
@@ -346,7 +349,7 @@ describe('reminderMessage', () => {
         const guild = makeGuild([]);
         guild.channels.fetch.mockResolvedValue(null);
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const result = await updateDeadlineMessage(guild, 'nonexistent');
 
@@ -361,7 +364,7 @@ describe('reminderMessage', () => {
         const guild = makeGuild([]);
         guild.channels.fetch.mockRejectedValue(new Error('Network error'));
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const result = await updateDeadlineMessage(guild, 'channel123');
 
@@ -383,7 +386,7 @@ describe('reminderMessage', () => {
         const guild = makeGuild([channel]);
         guild.channels.fetch.mockResolvedValue(channel);
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const result = await updateDeadlineMessage(guild, 'channel123');
 
@@ -401,7 +404,7 @@ describe('reminderMessage', () => {
 
         const newMessage = {
           id: 'msg777',
-          pin: jest.fn().mockRejectedValue(new Error('Pin limit reached'))
+          pin: vi.fn().mockRejectedValue(new Error('Pin limit reached'))
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.send.mockResolvedValue(newMessage);
@@ -409,7 +412,7 @@ describe('reminderMessage', () => {
         const guild = makeGuild([channel]);
         guild.channels.fetch.mockResolvedValue(channel);
 
-        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const result = await updateDeadlineMessage(guild, 'channel123');
 
@@ -436,7 +439,7 @@ describe('reminderMessage', () => {
 
         const newMessage = {
           id: 'msg888',
-          pin: jest.fn().mockResolvedValue(undefined)
+          pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.send.mockResolvedValue(newMessage);
@@ -466,7 +469,7 @@ describe('reminderMessage', () => {
 
         const newMessage = {
           id: 'msg999',
-          pin: jest.fn().mockResolvedValue(undefined)
+          pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.send.mockResolvedValue(newMessage);
@@ -488,7 +491,7 @@ describe('reminderMessage', () => {
 
         const newMessage = {
           id: 'msg-new',
-          pin: jest.fn().mockResolvedValue(undefined)
+          pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
         channel.send.mockResolvedValue(newMessage);

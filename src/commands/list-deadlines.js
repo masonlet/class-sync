@@ -1,62 +1,58 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { loadDeadlines } = require('../storage/deadlineStorage');
-const { resolveChannel } = require('../services/channels');
-const { deferEphemeral, replyEphemeral } = require('../utils/interactions');
-const { fromISO, discordTimestamp } = require('../utils/time');
-const { validateChannelFilter, checkRateLimit } = require('../utils/commandHelpers');
-const { getActiveDeadlines } = require('../utils/expiration');
+import { SlashCommandBuilder } from 'discord.js';
+import { loadDeadlines } from '../storage/deadlineStorage.js';
+import { resolveChannel } from '../services/channels.js';
+import { deferEphemeral, replyEphemeral } from '../utils/interactions.js';
+import { fromISO, discordTimestamp } from '../utils/time.js';
+import { validateChannelFilter, checkRateLimit } from '../utils/commandHelpers.js';
+import { getActiveDeadlines } from '../utils/expiration.js';
 
-module.exports = {
-  name: 'list-deadlines',
-  data: new SlashCommandBuilder()
-    .setName('list-deadlines')
-    .setDescription('List all stored deadlines')
-    .addStringOption(option =>
-      option.setName('course')
-        .setDescription('Filter by course (optional)')
-        .setRequired(false)
-    )
-    .addRoleOption(option =>
-      option.setName('cohort')
-        .setDescription('Filter by cohort (optional)')
-        .setRequired(false)
-    )
-    .toJSON(),
+export const name = 'list-deadlines';
 
-  async handle(interaction) {
-    await deferEphemeral(interaction);    
+export const data = new SlashCommandBuilder()
+  .setName('list-deadlines')
+  .setDescription('List all stored deadlines')
+  .addStringOption(option => option.setName('course')
+    .setDescription('Filter by course (optional)')
+    .setRequired(false)
+  )
+  .addRoleOption(option => option.setName('cohort')
+    .setDescription('Filter by cohort (optional)')
+    .setRequired(false)
+  )
+  .toJSON();
 
-    const rateLimitValid = await checkRateLimit(interaction);
-    if (!rateLimitValid) return;
+export async function handle(interaction) {
+  await deferEphemeral(interaction);
 
-    const courseFilter = interaction.options.getString('course');
-    const cohortFilter = interaction.options.getRole('cohort');
+  const rateLimitValid = await checkRateLimit(interaction);
+  if (!rateLimitValid) return;
 
-    let deadlines = loadDeadlines(interaction.guildId);
+  const courseFilter = interaction.options.getString('course');
+  const cohortFilter = interaction.options.getRole('cohort');
 
-    deadlines = getActiveDeadlines(deadlines);
+  let deadlines = loadDeadlines(interaction.guildId);
 
-    if(courseFilter) {
-      const channel = resolveChannel(interaction.guild, courseFilter);
+  deadlines = getActiveDeadlines(deadlines);
 
-      const channelValidation = validateChannelFilter(channel);
-      if(!channelValidation.valid) 
-        return replyEphemeral(interaction, channelValidation.error);
+  if (courseFilter) {
+    const channel = resolveChannel(interaction.guild, courseFilter);
 
-      if (channel)
-        deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
-    }
+    const channelValidation = validateChannelFilter(channel);
+    if (!channelValidation.valid)
+      return replyEphemeral(interaction, channelValidation.error);
 
-    if(cohortFilter) 
-      deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
-
-    if(deadlines.length === 0) 
-      return replyEphemeral(interaction, 'No deadlines found.');
-
-    const response = deadlines.map(d =>
-      `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${discordTimestamp(fromISO(d.dueDate))}`
-    ).join('\n');
-
-    return replyEphemeral(interaction, `**Stored Deadlines:**\n${response}`);
+    if (channel)
+      deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
   }
-};
+
+  if (cohortFilter)
+    deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
+
+  if (deadlines.length === 0)
+    return replyEphemeral(interaction, 'No deadlines found.');
+
+  const response = deadlines.map(d => `**${d.assignment}** - ${d.courseChannelName} (${d.cohortName}) - Due: ${discordTimestamp(fromISO(d.dueDate))}`
+  ).join('\n');
+
+  return replyEphemeral(interaction, `**Stored Deadlines:**\n${response}`);
+}

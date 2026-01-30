@@ -1,18 +1,18 @@
-const { Events } = require('discord.js');
-const { loadCommands } = require('../handlers/commandHandler');
-const { setupInteractionHandler } = require('../handlers/eventHandler');
-const { startCleanupJob } = require('../services/expirationCleanup');
-const { startReminderJob } = require('../services/reminderScheduler');
+import { Events } from 'discord.js';
+import { loadCommands } from '../handlers/commandHandler.js';
+import { setupInteractionHandler } from '../handlers/eventHandler.js';
+import { startCleanupJob } from '../services/expirationCleanup.js';
+import { startReminderJob } from '../services/reminderScheduler.js';
 
-function setupBot(client) {
-  loadCommands(client);
+export async function setupBot(client) {
+  await loadCommands(client);
   setupInteractionHandler(client);
 
   client.once(Events.ClientReady, async () => {
     console.log(`Logged in as ${client.user.tag}`);
 
     const cleanupInterval = process.env.CLEANUP_INTERVAL_MINUTES || 30;
-    startCleanupJob(cleanupInterval);
+    startCleanupJob(client, cleanupInterval);
 
     const reminderInterval = process.env.REMINDER_INTERVAL_MINUTES || 30;
     startReminderJob(client, reminderInterval);
@@ -20,5 +20,3 @@ function setupBot(client) {
     console.log(`Startup finished`);
   });
 }
-
-module.exports = { setupBot };

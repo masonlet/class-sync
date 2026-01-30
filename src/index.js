@@ -1,8 +1,8 @@
-require('dotenv').config();
-const { createClient } = require('./bot/client');
-const { setupBot } = require('./bot/setup');
+import "dotenv/config";
+import { createClient } from './bot/client.js';
+import { setupBot } from './bot/setup.js';
 
 const client = createClient();
-setupBot(client);
+await setupBot(client);
 
 client.login(process.env.DISCORD_TOKEN);

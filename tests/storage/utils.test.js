@@ -1,28 +1,31 @@
-const fs = require('fs');
-const path = require('path');
-const { getGuildDataPath, ensureGuildDir, DATA_DIR } = require('../../storage/utils');
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-jest.mock('fs');
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+
+import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/utils';
+
+vi.mock('fs');
 
 describe('storage utils', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getGuildDataPath()', () => {
     it('builds correct path for guild and filename', () => {
       const result = getGuildDataPath('123456789', 'deadlines.json');
-      expect(result).toBe(path.join(DATA_DIR, '123456789', 'deadlines.json'));
+      expect(result).toBe(join(DATA_DIR, '123456789', 'deadlines.json'));
     });
 
     it('handles different guild IDs', () => {
       const result = getGuildDataPath('987654321', 'messages.json');
-      expect(result).toBe(path.join(DATA_DIR, '987654321', 'messages.json'));
+      expect(result).toBe(join(DATA_DIR, '987654321', 'messages.json'));
     });
 
     it('handles different filenames', () => {
       const result = getGuildDataPath('111222333', 'config.json');
-      expect(result).toBe(path.join(DATA_DIR, '111222333', 'config.json'));
+      expect(result).toBe(join(DATA_DIR, '111222333', 'config.json'));
     });
 
     it('throws error when guildId is null', () => {
@@ -64,33 +67,33 @@ describe('storage utils', () => {
 
   describe('ensureGuildDir()', () => {
     it('creates directory when it does not exist', () => {
-      fs.existsSync.mockReturnValue(false);
+      existsSync.mockReturnValue(false);
       
       ensureGuildDir('123456789');
       
-      expect(fs.existsSync).toHaveBeenCalledWith(path.join(DATA_DIR, '123456789'));
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
-        path.join(DATA_DIR, '123456789'),
+      expect(existsSync).toHaveBeenCalledWith(join(DATA_DIR, '123456789'));
+      expect(mkdirSync).toHaveBeenCalledWith(
+        join(DATA_DIR, '123456789'),
         { recursive: true }
       );
     });
 
     it('does not create directory when it already exists', () => {
-      fs.existsSync.mockReturnValue(true);
+      existsSync.mockReturnValue(true);
       
       ensureGuildDir('123456789');
       
-      expect(fs.existsSync).toHaveBeenCalledWith(path.join(DATA_DIR, '123456789'));
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
+      expect(existsSync).toHaveBeenCalledWith(join(DATA_DIR, '123456789'));
+      expect(mkdirSync).not.toHaveBeenCalled();
     });
 
     it('handles different guild IDs', () => {
-      fs.existsSync.mockReturnValue(false);
+      existsSync.mockReturnValue(false);
       
       ensureGuildDir('987654321');
       
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
-        path.join(DATA_DIR, '987654321'),
+      expect(mkdirSync).toHaveBeenCalledWith(
+        join(DATA_DIR, '987654321'),
         { recursive: true }
       );
     });

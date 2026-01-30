@@ -1,7 +1,7 @@
-const { loadDeadlines } = require('../storage/deadlineStorage');
-const { loadMessages, saveMessages } = require('../storage/messageStorage');
-const { fromISO, discordTimestamp } = require('../utils/time');
-const { getActiveDeadlines } = require('../utils/expiration');
+import { loadDeadlines } from '../storage/deadlineStorage.js';
+import { loadMessages, saveMessages } from '../storage/messageStorage.js';
+import { fromISO, discordTimestamp } from '../utils/time.js';
+import { getActiveDeadlines } from '../utils/expiration.js';
 
 function sortDeadlinesByDate(deadlines) {
   return deadlines.sort((a, b) => fromISO(a.dueDate) - fromISO(b.dueDate));
@@ -47,7 +47,7 @@ async function updateOrCreateMessage(channel, content, guildId, messages, remind
   }
 }
 
-async function updateDeadlineMessage(guild, reminderLocationId) {
+export async function updateDeadlineMessage(guild, reminderLocationId) {
   try {
     const channel = await guild.channels.fetch(reminderLocationId);
     if (!channel) {
@@ -71,5 +71,3 @@ async function updateDeadlineMessage(guild, reminderLocationId) {
     return false;
   }
 }
-
-module.exports = { updateDeadlineMessage };

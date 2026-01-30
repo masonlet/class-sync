@@ -1,6 +1,11 @@
-const { ChannelType } = require('discord.js');
-const { resolveChannel, isForumChannel, isTextChannel } = require('../../services/channels');
-const { MockCollection, makeChannel, makeGuild } = require('../helpers/discordMocks');
+import { describe, it, expect } from 'vitest';
+
+import { ChannelType } from 'discord.js';
+
+import { makeChannel, makeGuild } from '../helpers/discordMocks';
+
+import { resolveChannel, isForumChannel, isTextChannel } from '../../src/services/channels';
+
 
 describe('channels', () => {
   describe('resolveChannel()', () => {
