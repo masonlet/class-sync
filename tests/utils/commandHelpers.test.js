@@ -1,11 +1,6 @@
-const { makeInteraction, makeCommandOptions } = require('../helpers/interactions');
+import { makeInteraction, makeCommandOptions } from '../helpers/interactions';
 
-const { 
-  extractCommandInputs, 
-  validateChannelResolution,
-  validateChannelFilter,
-  findDeadline 
-} = require('../../src/utils/commandHelpers');
+import { extractCommandInputs, validateChannelResolution, validateChannelFilter, findDeadline } from '../../src/utils/commandHelpers';
 
 describe('commandHelpers', () => {
   describe('extractCommandInputs()', () => {

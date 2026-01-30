@@ -1,14 +1,13 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { replyEphemeral } = require('../utils/interactions');
+import { SlashCommandBuilder } from 'discord.js';
+import { replyEphemeral } from '../utils/interactions.js';
 
-module.exports = {
-  name: 'status',
-  data: new SlashCommandBuilder()
-    .setName('status')
-    .setDescription('Check if bot is working')
-    .toJSON(),
+export const name = 'status';
 
-  async handle(interaction) {
-    return replyEphemeral(interaction, 'Bot is working');
-  }
-};
+export const data = new SlashCommandBuilder()
+  .setName('status')
+  .setDescription('Check if bot is working')
+  .toJSON();
+  
+export async function handle(interaction) {
+  return replyEphemeral(interaction, 'Bot is working');
+}

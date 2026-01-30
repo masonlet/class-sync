@@ -1,10 +1,10 @@
-const { MessageFlags } = require('discord.js');
+import { MessageFlags } from 'discord.js';
 
 // Discord REST error codes:
 // 10062 = Unknown interaction (expired token / invalid interaction)
 // 40060 = Interaction already acknowledged
 
-async function deferEphemeral(interaction) {
+export async function deferEphemeral(interaction) {
   if (interaction.deferred || interaction.replied) return;
   
   try {
@@ -17,7 +17,7 @@ async function deferEphemeral(interaction) {
   }
 }
 
-async function replyEphemeral(interaction, content) {
+export async function replyEphemeral(interaction, content) {
   try {
     if (interaction.deferred || interaction.replied) 
       return await interaction.editReply({ content });
@@ -30,8 +30,3 @@ async function replyEphemeral(interaction, content) {
     throw error;
   }
 }
-
-module.exports = {
-  deferEphemeral,
-  replyEphemeral
-};

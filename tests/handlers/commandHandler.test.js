@@ -1,4 +1,4 @@
-const { validateCommand } = require('../../src/handlers/commandHandler');
+import { validateCommand } from '../../src/handlers/commandHandler';
 
 describe('validateCommand', () => {
   const mockPath = '/commands/test.js';

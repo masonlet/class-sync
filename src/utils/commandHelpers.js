@@ -1,7 +1,7 @@
-const { isLimited, getRemainingTime } = require('../utils/ratelimiter.js');
-const { replyEphemeral } = require('./interactions.js');
+import { isLimited, getRemainingTime } from '../utils/ratelimiter.js';
+import { replyEphemeral } from './interactions.js';
 
-function extractCommandInputs(interaction) {
+export function extractCommandInputs(interaction) {
   return {
     course: interaction.options.getString('course'),
     cohort: interaction.options.getRole('cohort'),
@@ -10,7 +10,7 @@ function extractCommandInputs(interaction) {
   };
 }
 
-function validateChannelResolution(channel) {
+export function validateChannelResolution(channel) {
   if (!channel)
     return { valid: false, error: 'Channel not found.' };
 
@@ -20,14 +20,14 @@ function validateChannelResolution(channel) {
   return { valid: true };
 }
 
-function validateChannelFilter(channel) {
+export function validateChannelFilter(channel) {
   if (channel === "DUPLICATE")
     return { valid: false, error: 'Multiple channels match your filter. Please be more specific.' };
   
   return { valid: true };
 }
 
-function findDeadline(deadlines, channel, cohort, assignment) {
+export function findDeadline(deadlines, channel, cohort, assignment) {
   if (!channel || !cohort) return undefined;
 
   return deadlines.find(d => d &&
@@ -37,7 +37,7 @@ function findDeadline(deadlines, channel, cohort, assignment) {
   );
 }
 
-async function checkRateLimit(interaction) {
+export async function checkRateLimit(interaction) {
   const userId = interaction.user.id;
   const commandName = interaction.commandName;
   if (isLimited(userId, commandName)) {
@@ -46,11 +46,3 @@ async function checkRateLimit(interaction) {
   }
   return true;
 }
-
-module.exports = { 
-  extractCommandInputs, 
-  validateChannelResolution,
-  validateChannelFilter,
-  findDeadline,
-  checkRateLimit
-};

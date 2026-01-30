@@ -1,6 +1,6 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+import { Client, GatewayIntentBits, Collection } from 'discord.js';
 
-function createClient() {
+export function createClient() {
   const client = new Client({ 
     intents: [GatewayIntentBits.Guilds] 
   });
@@ -8,5 +8,3 @@ function createClient() {
   client.commands = new Collection();
   return client;
 }
-
-module.exports = { createClient };

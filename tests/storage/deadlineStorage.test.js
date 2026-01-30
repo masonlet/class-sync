@@ -1,8 +1,8 @@
-const { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } = require('../helpers/fsMocks');
-const { expectEmptyAndLoggedError } = require('../helpers/assertions');
+import { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } from '../helpers/fsMocks';
+import { expectEmptyAndLoggedError } from '../helpers/assertions';
 
-const { loadDeadlines, saveDeadlines } = require('../../src/storage/deadlineStorage');
-const { getGuildDataPath } = require('../../src/storage/utils');
+import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
+import { getGuildDataPath } from '../../src/storage/utils';
 
 describe('deadlineStorage', () => {
   const GUILD_ID = '123456789';

@@ -1,9 +1,9 @@
-const { makeChannel, makeGuild } = require('../helpers/discordMocks');
+import { makeChannel, makeGuild } from '../helpers/discordMocks';
 
-const { updateDeadlineMessage } = require('../../src/services/reminderMessage');
-const { loadDeadlines } = require('../../src/storage/deadlineStorage');
-const { loadMessages, saveMessages } = require('../../src/storage/messageStorage');
-const { fromISO, discordTimestamp } = require('../../src/utils/time');
+import { updateDeadlineMessage } from '../../src/services/reminderMessage';
+import { loadDeadlines } from '../../src/storage/deadlineStorage';
+import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
+import { fromISO, discordTimestamp } from '../../src/utils/time';
 
 jest.mock('../../src/storage/deadlineStorage');
 jest.mock('../../src/storage/messageStorage');

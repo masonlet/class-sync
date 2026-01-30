@@ -1,12 +1,11 @@
 // Shared expectation helpers for common patterns
 
-const expectIgnoreErrorCode = async (fn, expectedCode, expectedResult = undefined) => {
-  const mockError = { code: expectedCode };
+export const expectIgnoreErrorCode = async (fn, expectedCode, expectedResult = undefined) => {
   const promise = fn();
   await expect(promise).resolves.toBe(expectedResult);
 };
 
-const expectSpecificError = (fn, errorPrefix, errorMessageMatch) => {
+export const expectSpecificError = (fn, errorPrefix, errorMessageMatch) => {
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
   try {
     fn();
@@ -19,7 +18,7 @@ const expectSpecificError = (fn, errorPrefix, errorMessageMatch) => {
   }
 };
 
-const expectEmptyAndLoggedError = (loadFn, errorPrefix, expectedDefault = []) => {
+export const expectEmptyAndLoggedError = (loadFn, errorPrefix, expectedDefault = []) => {
   const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
   try {
     const result = loadFn();
@@ -30,14 +29,6 @@ const expectEmptyAndLoggedError = (loadFn, errorPrefix, expectedDefault = []) =>
   }
 };
 
-const expectRethrowsUnknownError = async (fn, errorMsg) => {
-  const unknownError = new Error(errorMsg);
+export const expectRethrowsUnknownError = async (fn, errorMsg) => {
   await expect(fn).rejects.toThrow(errorMsg);
-};
-
-module.exports = {
-  expectIgnoreErrorCode,
-  expectSpecificError,
-  expectEmptyAndLoggedError,
-  expectRethrowsUnknownError,
 };

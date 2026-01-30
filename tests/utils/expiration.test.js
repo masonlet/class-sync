@@ -1,5 +1,5 @@
-const { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } = require('../../src/utils/expiration');
-const { now, fromISO } = require('../../src/utils/time');
+import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
+import { now, fromISO } from '../../src/utils/time';
 
 jest.mock('../../src/utils/time');
 

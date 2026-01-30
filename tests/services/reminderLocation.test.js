@@ -1,9 +1,9 @@
-const { ChannelType } = require('discord.js');
+import { ChannelType } from 'discord.js';
 
-const { MockCollection, makeChannel, makeThread, makeGuild } = require('../helpers/discordMocks');
+import { MockCollection, makeChannel, makeThread, makeGuild } from '../helpers/discordMocks';
 
-const { getOrCreateReminderLocation } = require('../../src/services/reminderLocation');
-const { loadMessages, saveMessages } = require('../../src/storage/messageStorage');
+import { getOrCreateReminderLocation } from '../../src/services/reminderLocation';
+import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
 
 jest.mock('../../src/storage/messageStorage');
 

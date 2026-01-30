@@ -1,10 +1,10 @@
-const { Events } = require('discord.js');
-const { loadCommands } = require('../handlers/commandHandler');
-const { setupInteractionHandler } = require('../handlers/eventHandler');
-const { startCleanupJob } = require('../services/expirationCleanup');
-const { startReminderJob } = require('../services/reminderScheduler');
+import { Events } from 'discord.js';
+import { loadCommands } from '../handlers/commandHandler.js';
+import { setupInteractionHandler } from '../handlers/eventHandler.js';
+import { startCleanupJob } from '../services/expirationCleanup.js';
+import { startReminderJob } from '../services/reminderScheduler.js';
 
-function setupBot(client) {
+export function setupBot(client) {
   loadCommands(client);
   setupInteractionHandler(client);
 
@@ -20,5 +20,3 @@ function setupBot(client) {
     console.log(`Startup finished`);
   });
 }
-
-module.exports = { setupBot };

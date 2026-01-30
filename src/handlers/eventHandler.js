@@ -1,6 +1,6 @@
-const { Events } = require('discord.js');
+import { Events } from 'discord.js';
 
-async function handleCommandInteraction(interaction, client) {
+export async function handleCommandInteraction(interaction, client) {
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
@@ -13,10 +13,8 @@ async function handleCommandInteraction(interaction, client) {
   }
 }
 
-function setupInteractionHandler(client) {
+export function setupInteractionHandler(client) {
   client.on(Events.InteractionCreate, async interaction => {
     await handleCommandInteraction(interaction, client);
   });
 }
-
-module.exports = { handleCommandInteraction, setupInteractionHandler };

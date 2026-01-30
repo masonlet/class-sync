@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Class Sync discord bot",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "deploy": "node deploy-commands.js",
     "start": "node src/index.js"

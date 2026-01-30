@@ -1,7 +1,7 @@
-const { validateDeadlineTime } = require('../../src/utils/validation');
+import { validateDeadlineTime } from '../../src/utils/validation';
+import { now } from '../../src/utils/time';
 
 jest.mock('../../src/utils/time');
-const { now } = require('../../src/utils/time');
 
 describe('validateDeadlineTime', () => {
   beforeEach(() => {

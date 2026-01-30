@@ -1,6 +1,6 @@
 // Discord interaction factories for command/interaction/permission tests
 
-const makeInteraction = (overrides = {}) => {
+export const makeInteraction = (overrides = {}) => {
   const { options: customOptions, ...otherOverrides } = overrides;
 
   return {
@@ -31,27 +31,19 @@ const makeInteraction = (overrides = {}) => {
   };
 };
 
-const makeCommandOptions = ({ course, assignment, date, cohort }) => ({ 
+export const makeCommandOptions = ({ course, assignment, date, cohort }) => ({ 
   course, assignment, date, cohort, 
 });
 
-const makeHelperUser = (roleNames = ['Helper']) => makeInteraction({ 
+export const makeHelperUser = (roleNames = ['Helper']) => makeInteraction({ 
   roleNames 
 });
 
-const makeAdminUser = (roleNames = []) => makeInteraction({ 
+export const makeAdminUser = (roleNames = []) => makeInteraction({ 
   roleNames, 
   isAdmin: true 
 });
 
-const makeRegularUser = () => makeInteraction({ 
+export const makeRegularUser = () => makeInteraction({ 
   roleNames: ['Student'] 
 });
-
-module.exports = {
-  makeInteraction,
-  makeCommandOptions,
-  makeHelperUser,
-  makeAdminUser,
-  makeRegularUser,
-};

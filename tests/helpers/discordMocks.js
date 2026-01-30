@@ -1,6 +1,6 @@
-const { ChannelType } = require('discord.js');
+import { ChannelType } from 'discord.js';
 
-class MockCollection extends Map {
+export class MockCollection extends Map {
   filter(fn) {
     const out = new MockCollection();
     for (const [k, v] of this) if (fn(v, k, this)) out.set(k, v);
@@ -17,7 +17,7 @@ class MockCollection extends Map {
   }
 }
 
-const makeChannel = (
+export const makeChannel = (
   id,
   name,
   type = ChannelType.GuildText,
@@ -37,13 +37,13 @@ const makeChannel = (
   send: jest.fn(),
 });
 
-const makeThread = (id, name) => ({
+export const makeThread = (id, name) => ({
   id,
   name,
   fetchStarterMessage: jest.fn(),
 });
 
-const makeGuild = (channels = []) => ({
+export const makeGuild = (channels = []) => ({
   id: 'guild123',
   channels: {
     cache: new MockCollection(channels.map(c => [c.id, c])),
@@ -51,10 +51,3 @@ const makeGuild = (channels = []) => ({
     create: jest.fn(),
   },
 });
-
-module.exports = {
-  MockCollection,
-  makeChannel,
-  makeThread,
-  makeGuild,
-}

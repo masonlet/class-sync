@@ -1,7 +1,7 @@
-const { makeInteraction, makeHelperUser, makeAdminUser, makeRegularUser } = require('../helpers/interactions');
+import { makeInteraction, makeHelperUser, makeAdminUser, makeRegularUser } from '../helpers/interactions';
 
-const { hasPermission, denyPermission } = require('../../src/utils/permissions');
-const { replyEphemeral } = require('../../src/utils/interactions');
+import { hasPermission, denyPermission } from '../../src/utils/permissions';
+import { replyEphemeral } from '../../src/utils/interactions';
 
 jest.mock('../../src/utils/interactions');
 

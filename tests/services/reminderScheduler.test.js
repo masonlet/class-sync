@@ -1,10 +1,5 @@
-const {
-  getHoursUntilDeadline,
-  shouldSendReminder,
-  formatNormalReminder,
-  formatLateReminder
-} = require('../../src/services/reminderScheduler');
-const { now, fromISO, discordTimestamp } = require('../../src/utils/time');
+import { getHoursUntilDeadline, shouldSendReminder, formatNormalReminder, formatLateReminder } from '../../src/services/reminderScheduler';
+import { now, fromISO, discordTimestamp } from '../../src/utils/time';
 
 jest.mock('../../src/utils/time');
 

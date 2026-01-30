@@ -1,5 +1,5 @@
-const { getExpiredDeadlines } = require('../utils/expiration');
-const { getAllDeadlines, removeDeadline } = require('../storage/deadlineStorage');
+import { getActiveDeadlines } from '../utils/expiration.js';
+import { loadDeadlines, saveDeadlines } from '../storage/deadlineStorage.js';
 
 let cleanupInterval = null;
 
@@ -41,16 +41,10 @@ function startCleanupJob(intervalMinutes = 15) {
   }, intervalMs);
 }
 
-function stopCleanupJob() {
+export function stopCleanupJob() {
   if (cleanupInterval) {
     clearInterval(cleanupInterval);
     cleanupInterval = null;
     console.log('Stopped expiration cleanup job');
   }
 }
-
-module.exports = {
-  cleanupExpiredDeadlines,
-  startCleanupJob,
-  stopCleanupJob
-};

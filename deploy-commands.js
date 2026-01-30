@@ -1,8 +1,8 @@
-require('dotenv').config();
-const { REST, Routes } = require('discord.js');
-const { loadCommands } = require('./src/handlers/commandHandler');
+import "dotenv/config";
+import { REST, Routes } from 'discord.js';
+import { loadCommands } from './src/handlers/commandHandler.js';
 
-const commands = loadCommands(null);
+const commands = await loadCommands(null);
 
 const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
