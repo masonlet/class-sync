@@ -4,8 +4,8 @@ import { setupInteractionHandler } from '../handlers/eventHandler.js';
 import { startCleanupJob } from '../services/expirationCleanup.js';
 import { startReminderJob } from '../services/reminderScheduler.js';
 
-export function setupBot(client) {
-  loadCommands(client);
+export async function setupBot(client) {
+  await loadCommands(client);
   setupInteractionHandler(client);
 
   client.once(Events.ClientReady, async () => {
