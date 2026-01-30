@@ -1,7 +1,9 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { validateDeadlineTime } from '../../src/utils/validation';
 import { now } from '../../src/utils/time';
 
-jest.mock('../../src/utils/time');
+vi.mock('../../src/utils/time');
 
 describe('validateDeadlineTime', () => {
   beforeEach(() => {

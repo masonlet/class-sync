@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { makeInteraction, makeCommandOptions } from '../helpers/interactions';
 
 import { extractCommandInputs, validateChannelResolution, validateChannelFilter, findDeadline } from '../../src/utils/commandHelpers';

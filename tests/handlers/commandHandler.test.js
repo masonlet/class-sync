@@ -1,4 +1,5 @@
 import { validateCommand } from '../../src/handlers/commandHandler';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('validateCommand', () => {
   const mockPath = '/commands/test.js';
@@ -9,12 +10,12 @@ describe('validateCommand', () => {
   });
 
   it('should throw when command missing name', () => {
-    expect(() => validateCommand({ data: {}, handle: jest.fn() }, mockPath))
+    expect(() => validateCommand({ data: {}, handle: vi.fn() }, mockPath))
       .toThrow('Command missing name: /commands/test.js');
   });
 
   it('should throw when command missing data', () => {
-    expect(() => validateCommand({ name: 'test', handle: jest.fn() }, mockPath))
+    expect(() => validateCommand({ name: 'test', handle: vi.fn() }, mockPath))
       .toThrow('Command missing data: /commands/test.js');
   });
 
@@ -27,7 +28,7 @@ describe('validateCommand', () => {
     expect(() => validateCommand({ 
       name: 'test', 
       data: {}, 
-      handle: jest.fn() 
+      handle: vi.fn() 
     }, mockPath)).not.toThrow();
   });
 });

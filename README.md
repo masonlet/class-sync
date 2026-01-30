@@ -20,7 +20,7 @@ Discord bot for syncing course deadlines across class channels and forums. Featu
 - **Multi-Guild** - Supports multiple Discord servers with isolated data storage
 - **Automatic Expiration** - Auto-removes past deadlines every 30 minutes
 - **Downtime Recovery** - Catches up on missed reminders when bot restarts
-- **Full Test Coverage** - Thoroughly tested with Vitest
+- **Test Coverage** - Thoroughly tested with Vitest
 
 ## Usage
 

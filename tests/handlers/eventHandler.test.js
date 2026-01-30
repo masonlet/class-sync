@@ -1,4 +1,5 @@
 import { handleCommandInteraction } from '../../src/handlers/eventHandler';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('handleCommandInteraction', () => {
   let mockClient;
@@ -7,13 +8,13 @@ describe('handleCommandInteraction', () => {
   let consoleErrorSpy;
 
   beforeEach(() => {
-    mockCommand = { handle: jest.fn() };
+    mockCommand = { handle: vi.fn() };
     mockClient = { commands: new Map([['test', mockCommand]]) };
     mockInteraction = {
-      isChatInputCommand: jest.fn(() => true),
+      isChatInputCommand: vi.fn(() => true),
       commandName: 'test'
     };
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {

@@ -1,7 +1,9 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
 import { now, fromISO } from '../../src/utils/time';
 
-jest.mock('../../src/utils/time');
+vi.mock('../../src/utils/time');
 
 describe('expiration utils', () => {
   beforeEach(() => {

@@ -1,22 +1,28 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup';
 import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
 import { getActiveDeadlines } from '../../src/utils/expiration';
 
-jest.mock('../../src/storage/deadlineStorage', () => ({
-  loadDeadlines: jest.fn(),
-  saveDeadlines: jest.fn(),
+vi.mock('../../src/storage/deadlineStorage', () => ({
+  loadDeadlines: vi.fn(),
+  saveDeadlines: vi.fn(),
 }));
-jest.mock('../../src/utils/expiration', () => ({
-  getActiveDeadlines: jest.fn(),
+vi.mock('../../src/utils/expiration', () => ({
+  getActiveDeadlines: vi.fn(),
 }));
+
+const makeClient = () => ({
+  guilds: { cache: new Map() },
+});
 
 describe('expirationCleanup service', () => {
   const GUILD_ID = 'guild123';
   let consoleLogSpy;
   
   beforeEach(() => {
-    jest.clearAllMocks();
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+    vi.clearAllMocks();
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     stopCleanupJob();
   });
 
@@ -60,20 +66,22 @@ describe('expirationCleanup service', () => {
     });
 
     it('handles multiple expired deadlines', async () => {
-      const mockExpired = [
+      const all = [
         { id: '1', assignment: 'Test 1' },
         { id: '2', assignment: 'Test 2' },
         { id: '3', assignment: 'Test 3' },
       ];
 
-      getAllDeadlines.mockReturnValue(mockExpired);
-      getExpiredDeadlines.mockReturnValue(mockExpired);
+      const active = [];
 
-      const result = await cleanupExpiredDeadlines();
+      loadDeadlines.mockReturnValue(all);
+      getActiveDeadlines.mockReturnValue(active);
+
+      const result = await cleanupExpiredDeadlines(GUILD_ID);
 
       expect(result.removed).toBe(3);
       expect(result.deadlineIds).toEqual(['1', '2', '3']);
-      expect(removeDeadline).toHaveBeenCalledTimes(3);
+      expect(saveDeadlines).toHaveBeenCalledWith(GUILD_ID, active);
     });
 
     it('handles empty deadline list', async () => {
@@ -84,36 +92,36 @@ describe('expirationCleanup service', () => {
 
       expect(result.removed).toBe(0);
       expect(result.deadlineIds).toEqual([]);
-      expect(removeDeadline).not.toHaveBeenCalled();
+      expect(saveDeadlines).not.toHaveBeenCalled();
     });
   });
 
   describe('startCleanupJob and stopCleanupJob', () => {
-    beforeEach(() => jest.useFakeTimers());
+    beforeEach(() => vi.useFakeTimers());
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
       stopCleanupJob();
     });
 
     it('starts cleanup job with default interval', () => {
-      startCleanupJob();
+      startCleanupJob(makeClient());
       expect(consoleLogSpy).toHaveBeenCalledWith('Starting expiration cleanup job (every 15 minutes)');
     });
 
     it('starts cleanup job with custom interval', () => {
-      startCleanupJob(30);
+      startCleanupJob(makeClient(), 30);
       expect(consoleLogSpy).toHaveBeenCalledWith('Starting expiration cleanup job (every 30 minutes)');
     });
 
     it('does not start multiple cleanup jobs', () => {
-      startCleanupJob();
-      startCleanupJob();
+      startCleanupJob(makeClient());
+      startCleanupJob(makeClient());
       expect(consoleLogSpy).toHaveBeenCalledWith('Cleanup job already running');
     });
 
     it('stops cleanup job', () => {
-      startCleanupJob();
+      startCleanupJob(makeClient());
       stopCleanupJob();
       expect(consoleLogSpy).toHaveBeenCalledWith('Stopped expiration cleanup job');
     });
@@ -129,9 +137,9 @@ describe('expirationCleanup service', () => {
       loadDeadlines.mockReturnValue([]);
       getActiveDeadlines.mockReturnValue([]);
 
-      startCleanupJob(1); 
+      startCleanupJob(mockClient, 1); 
 
-      jest.advanceTimersByTime(60000); 
+      vi.advanceTimersByTime(60000); 
       await Promise.resolve();
 
       expect(loadDeadlines).toHaveBeenCalledWith('A');

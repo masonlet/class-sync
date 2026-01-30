@@ -1,5 +1,7 @@
 // Discord interaction factories for command/interaction/permission tests
 
+import { vi } from 'vitest';
+
 export const makeInteraction = (overrides = {}) => {
   const { options: customOptions, ...otherOverrides } = overrides;
 
@@ -7,16 +9,16 @@ export const makeInteraction = (overrides = {}) => {
     deferred: false,
     replied: false,
     options: {
-      getString: jest.fn((key) => customOptions?.[key] ?? null),
-      getRole: jest.fn((key) => customOptions?.[key] ?? null),
+      getString: vi.fn((key) => customOptions?.[key] ?? null),
+      getRole: vi.fn((key) => customOptions?.[key] ?? null),
     },
-    deferReply: jest.fn(),
-    reply: jest.fn(),
-    editReply: jest.fn(),
+    deferReply: vi.fn(),
+    reply: vi.fn(),
+    editReply: vi.fn(),
     member: {
       roles: {
         cache: {
-          some: jest.fn((cb) => {
+          some: vi.fn((cb) => {
             const roleNames = overrides.roleNames ?? [];
             const mockRoles = roleNames.map(name => ({ name }));
             return mockRoles.some(cb);
@@ -24,7 +26,7 @@ export const makeInteraction = (overrides = {}) => {
         },
       },
       permissions: {
-        has: jest.fn((perm) => overrides.isAdmin ?? false),
+        has: vi.fn((perm) => overrides.isAdmin ?? false),
       },
     },
     ...otherOverrides,

@@ -1,13 +1,15 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/utils';
 
-jest.mock('fs');
+vi.mock('fs');
 
 describe('storage utils', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getGuildDataPath()', () => {

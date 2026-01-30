@@ -1,7 +1,9 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { getHoursUntilDeadline, shouldSendReminder, formatNormalReminder, formatLateReminder } from '../../src/services/reminderScheduler';
 import { now, fromISO, discordTimestamp } from '../../src/utils/time';
 
-jest.mock('../../src/utils/time');
+vi.mock('../../src/utils/time');
 
 describe('reminderScheduler', () => {
   beforeEach(() => {

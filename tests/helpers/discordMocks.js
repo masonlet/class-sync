@@ -1,4 +1,5 @@
 import { ChannelType } from 'discord.js';
+import { vi } from 'vitest';
 
 export class MockCollection extends Map {
   filter(fn) {
@@ -28,26 +29,26 @@ export const makeChannel = (
   type,
   parentId,
   threads: {
-    create: jest.fn(),
-    fetchActive: jest.fn(),
+    create: vi.fn(),
+    fetchActive: vi.fn(),
   },
   messages: {
-    fetch: jest.fn(),
+    fetch: vi.fn(),
   },
-  send: jest.fn(),
+  send: vi.fn(),
 });
 
 export const makeThread = (id, name) => ({
   id,
   name,
-  fetchStarterMessage: jest.fn(),
+  fetchStarterMessage: vi.fn(),
 });
 
 export const makeGuild = (channels = []) => ({
   id: 'guild123',
   channels: {
     cache: new MockCollection(channels.map(c => [c.id, c])),
-    fetch: jest.fn(),
-    create: jest.fn(),
+    fetch: vi.fn(),
+    create: vi.fn(),
   },
 });

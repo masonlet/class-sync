@@ -1,3 +1,5 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } from '../helpers/fsMocks';
 import { expectEmptyAndLoggedError } from '../helpers/assertions';
 
@@ -8,7 +10,7 @@ describe('deadlineStorage', () => {
   const GUILD_ID = '123456789';
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     resetMocks();
   });
 
@@ -98,7 +100,7 @@ describe('deadlineStorage', () => {
     });
 
     it('logs error when write fails', () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       try {
         mockWriteError('disk full');
         saveDeadlines(GUILD_ID, []);

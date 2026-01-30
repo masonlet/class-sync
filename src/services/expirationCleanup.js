@@ -6,16 +6,16 @@ let cleanupInterval = null;
 export async function cleanupExpiredDeadlines(guildId) {
   const allDeadlines = loadDeadlines(guildId);
   const activeDeadlines = getActiveDeadlines(allDeadlines);
+  const activeIds = new Set(activeDeadlines.map(d => d.id));
 
-  const removedCount = allDeadlines.length - activeDeadlines.length;
   const removedIds = allDeadlines
-    .filter(d => !activeDeadlines.includes(d))
+    .filter(d => !activeIds.has(d.id))
     .map(d => d.id);
 
-  if (removedCount > 0)
+  if (removedIds.length > 0)
     saveDeadlines(guildId, activeDeadlines);
 
-  return { removed: removedCount, deadlineIds: removedIds };
+  return { removed: removedIds.length, deadlineIds: removedIds };
 }
 
 function startInterval(client, intervalMinutes) {

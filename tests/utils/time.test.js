@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { now, toISO, fromISO, discordTimestamp } from '../../src/utils/time';
 
 describe('time utilities', () => {

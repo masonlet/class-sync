@@ -1,14 +1,16 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { isLimited, getRemainingTime, resetCooldowns, cleanup } from '../../src/utils/ratelimiter';
 
 describe('rateLimiter', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(0);
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
     resetCooldowns();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -34,7 +36,7 @@ describe('rateLimiter', () => {
 
     it('resets count after window expires', () => {
       isLimited('user1', 'add-deadline');
-      jest.advanceTimersByTime(10000);
+      vi.advanceTimersByTime(10000);
       expect(isLimited('user1', 'add-deadline')).toBe(false);
     });
 
@@ -54,13 +56,13 @@ describe('rateLimiter', () => {
     it('returns 0 when no cooldown or expired', () => {
       expect(getRemainingTime('user1', 'add-deadline')).toBe(0);
       isLimited('user1', 'add-deadline');
-      jest.advanceTimersByTime(10001);
+      vi.advanceTimersByTime(10001);
       expect(getRemainingTime('user1', 'add-deadline')).toBe(0);
     });
 
     it('returns seconds until reset', () => {
       isLimited('user1', 'add-deadline');
-      jest.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(3000);
       expect(getRemainingTime('user1', 'add-deadline')).toBe(7);
     });
   });
@@ -69,7 +71,7 @@ describe('rateLimiter', () => {
     it('removes expired entries after interval', () => {
       for (let i = 0; i < 6; i++) isLimited('user1', 'add-deadline');
       expect(isLimited('user1', 'add-deadline')).toBe(true);
-      jest.advanceTimersByTime(10001 + 60000);
+      vi.advanceTimersByTime(10001 + 60000);
       expect(isLimited('user1', 'add-deadline')).toBe(false);
     });
   });

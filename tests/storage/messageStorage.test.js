@@ -1,16 +1,18 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
 import { getGuildDataPath } from '../../src/storage/utils';
 
-jest.mock('fs');
+vi.mock('fs');
 
 describe('messageStorage', () => {
   const GUILD_ID = '123456789';
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    console.error = jest.fn();
+    vi.clearAllMocks();
+    console.error = vi.fn();
   });
 
   describe('loadMessages()', () => {

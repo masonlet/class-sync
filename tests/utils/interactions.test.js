@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { MessageFlags } from 'discord.js';
 
 import { makeInteraction } from '../helpers/interactions';

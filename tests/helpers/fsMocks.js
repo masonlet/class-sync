@@ -1,7 +1,11 @@
 // Centralized fs mocking for storage tests
 
-jest.mock('fs');
-export const mockFs = jest.requireMock('fs');
+import { expect, vi } from 'vitest';
+import * as fs from 'fs';
+
+vi.mock('fs');
+
+export const mockFs = vi.mocked(fs);
 
 export const resetMocks = () => {
   mockFs.existsSync.mockReset();
