@@ -12,7 +12,7 @@ export function setupBot(client) {
     console.log(`Logged in as ${client.user.tag}`);
 
     const cleanupInterval = process.env.CLEANUP_INTERVAL_MINUTES || 30;
-    startCleanupJob(cleanupInterval);
+    startCleanupJob(client, cleanupInterval);
 
     const reminderInterval = process.env.REMINDER_INTERVAL_MINUTES || 30;
     startReminderJob(client, reminderInterval);

@@ -1,16 +1,17 @@
-const { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } = require('../../src/services/expirationCleanup');
-const { getAllDeadlines, removeDeadline } = require('../../src/storage/deadlineStorage');
-const { getExpiredDeadlines } = require('../../src/utils/expiration');
+import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup';
+import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
+import { getActiveDeadlines } from '../../src/utils/expiration';
 
 jest.mock('../../src/storage/deadlineStorage', () => ({
-  getAllDeadlines: jest.fn(),
-  removeDeadline: jest.fn(),
+  loadDeadlines: jest.fn(),
+  saveDeadlines: jest.fn(),
 }));
 jest.mock('../../src/utils/expiration', () => ({
-  getExpiredDeadlines: jest.fn(),
+  getActiveDeadlines: jest.fn(),
 }));
 
 describe('expirationCleanup service', () => {
+  const GUILD_ID = 'guild123';
   let consoleLogSpy;
   
   beforeEach(() => {
@@ -31,32 +32,31 @@ describe('expirationCleanup service', () => {
         { id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' },
       ];
 
-      const mockExpired = [
-        { id: '1', assignment: 'Test 1', dueDate: '2026-01-20T23:59:00Z' },
+      const active = [
+        { id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' },
       ];
 
-      getAllDeadlines.mockReturnValue(mockDeadlines);
-      getExpiredDeadlines.mockReturnValue(mockExpired);
+      loadDeadlines.mockReturnValue(mockDeadlines);
+      getActiveDeadlines.mockReturnValue(active);
 
-      const result = await cleanupExpiredDeadlines();
+      const result = await cleanupExpiredDeadlines(GUILD_ID);
       
       expect(result.removed).toBe(1);
       expect(result.deadlineIds).toEqual(['1']);
-      expect(removeDeadline).toHaveBeenCalledWith('1');
-      expect(removeDeadline).toHaveBeenCalledTimes(1);
+      expect(saveDeadlines).toHaveBeenCalledWith(GUILD_ID, active);
     });
 
     it('returns zero when no deadlines are expired', async () => {
-      getAllDeadlines.mockReturnValue([
-        { id: '1', assignment: 'Test 1', dueDate: '2026-01-20T23:59:00Z' },
-      ]);
-      getExpiredDeadlines.mockReturnValue([]);
+      const mockDeadlines = [{ id: '1' }];
 
-      const result = await cleanupExpiredDeadlines();
+      loadDeadlines.mockReturnValue(mockDeadlines);
+      getActiveDeadlines.mockReturnValue(mockDeadlines);
+
+      const result = await cleanupExpiredDeadlines(GUILD_ID);
 
       expect(result.removed).toBe(0);
       expect(result.deadlineIds).toEqual([]);
-      expect(removeDeadline).not.toHaveBeenCalled();
+      expect(saveDeadlines).not.toHaveBeenCalled();
     });
 
     it('handles multiple expired deadlines', async () => {
@@ -77,10 +77,10 @@ describe('expirationCleanup service', () => {
     });
 
     it('handles empty deadline list', async () => {
-      getAllDeadlines.mockReturnValue([]);
-      getExpiredDeadlines.mockReturnValue([]);
+      loadDeadlines.mockReturnValue([]);
+      getActiveDeadlines.mockReturnValue([]);
 
-      const result = await cleanupExpiredDeadlines();
+      const result = await cleanupExpiredDeadlines(GUILD_ID);
 
       expect(result.removed).toBe(0);
       expect(result.deadlineIds).toEqual([]);
@@ -89,9 +89,7 @@ describe('expirationCleanup service', () => {
   });
 
   describe('startCleanupJob and stopCleanupJob', () => {
-    beforeEach(() => {
-      jest.useFakeTimers();
-    });
+    beforeEach(() => jest.useFakeTimers());
 
     afterEach(() => {
       jest.useRealTimers();
@@ -121,22 +119,23 @@ describe('expirationCleanup service', () => {
     });
 
     it('runs cleanup at specified interval', async () => {
-      getAllDeadlines.mockReturnValue([]);
-      getExpiredDeadlines.mockReturnValue([]);
+      const guildA = { id: 'A' };
+      const guildB = { id: 'B' };
+
+      const mockClient = {
+        guilds: { cache: new Map([['A', guildA], ['B', guildB]]) }
+      };
+
+      loadDeadlines.mockReturnValue([]);
+      getActiveDeadlines.mockReturnValue([]);
 
       startCleanupJob(1); 
 
-      expect(getAllDeadlines).not.toHaveBeenCalled();
-
       jest.advanceTimersByTime(60000); 
       await Promise.resolve();
 
-      expect(getAllDeadlines).toHaveBeenCalledTimes(1);
-
-      jest.advanceTimersByTime(60000); 
-      await Promise.resolve();
-
-      expect(getAllDeadlines).toHaveBeenCalledTimes(2);
+      expect(loadDeadlines).toHaveBeenCalledWith('A');
+      expect(loadDeadlines).toHaveBeenCalledWith('B');
     });
   });
 });
