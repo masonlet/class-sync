@@ -4,7 +4,7 @@ const CLEANUP_INTERVAL_MS = 60000;
 
 const cooldowns = new Map();
 
-const intervalId = setInterval(() => {
+const intervalId = setInterval((): void => {
   const now = Date.now();
 
   for (const [key, entry] of cooldowns.entries()) {
@@ -14,14 +14,14 @@ const intervalId = setInterval(() => {
   }
 }, CLEANUP_INTERVAL_MS);
 
-intervalId.unref();
+intervalId.unref(); // Allows process to exit while timer's still active
 
 export function isLimited(
-  userId,
-  commandName,
+  userId: string,
+  commandName: string,
   maxUses = DEFAULT_MAX_USES,
   windowMs = DEFAULT_WINDOW_MS
-) {
+): boolean {
   const key = `${userId}-${commandName}`;
   const now = Date.now();
   let entry = cooldowns.get(key);
@@ -39,7 +39,10 @@ export function isLimited(
   return false;
 }
 
-export function getRemainingTime(userId, commandName) {
+export function getRemainingTime(
+  userId: string, 
+  commandName: string
+): number {
   const key = `${userId}-${commandName}`;
   const entry = cooldowns.get(key);
 
@@ -49,10 +52,10 @@ export function getRemainingTime(userId, commandName) {
   return Math.ceil((entry.resetTime - Date.now()) / 1000);
 }
 
-export function resetCooldowns() {
+export function resetCooldowns(): void {
   cooldowns.clear();
 }
 
-export function cleanup() {
+export function cleanup(): void {
   clearInterval(intervalId);
 }
