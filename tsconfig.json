@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // Module/Target
-    "target": "ES6",
+    "target": "es2022",
     "module": "esnext",
     "moduleResolution": "bundler",
     "outDir": "./dist",
