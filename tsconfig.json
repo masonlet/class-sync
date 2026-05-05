@@ -45,7 +45,8 @@
     "noEmit": true
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./deploy-commands.ts"
   ],
   "exclude": [
     "dist/",
