@@ -1,5 +1,5 @@
 import { fromISO, now } from "./time";
-import { Deadline} from "../types"
+import type { Deadline } from "../types"
 
 export function isDeadlineExpired(deadline: Deadline): boolean {
   if (!deadline || !deadline.dueDate)

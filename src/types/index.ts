@@ -1,4 +1,4 @@
-import { Role, APIRole, TextChannel, ThreadChannel } from "discord.js";
+import { type APIRole, Role, TextChannel, ThreadChannel } from "discord.js";
 
 export type CommandInputs = {
   course: string | null;

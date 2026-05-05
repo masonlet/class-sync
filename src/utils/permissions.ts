@@ -1,7 +1,6 @@
 import { 
   ChatInputCommandInteraction, 
-  GuildMember, 
-  PermissionsBitField 
+  GuildMember
 } from "discord.js";
 import { replyEphemeral } from "./interactions";
 
@@ -12,7 +11,7 @@ export function hasPermission(
   if (!(member instanceof GuildMember)) return false;
 
   const hasHelper = member.roles.cache.some(
-    role => role.name === process.env.HELPER_ROLE_NAME
+    role => role.name === process.env['HELPER_ROLE_NAME']
   );
   if (hasHelper) return true;
 
@@ -22,5 +21,5 @@ export function hasPermission(
 export async function denyPermission(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
-   await replyEphemeral(interaction, `You need the ${process.env.HELPER_ROLE_NAME} role to use this.`);
+   await replyEphemeral(interaction, `You need the ${process.env['HELPER_ROLE_NAME']} role to use this.`);
 }

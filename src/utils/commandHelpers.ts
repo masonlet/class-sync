@@ -1,9 +1,9 @@
-import { 
-  ChatInputCommandInteraction, 
-  Role, 
-  APIRole
-} from "discord.js";
 import {
+  type APIRole,
+  ChatInputCommandInteraction,
+  Role
+} from "discord.js";
+import type {
   CommandInputs,
   ValidationResult,
   Channel,
