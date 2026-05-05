@@ -12,6 +12,7 @@ export type ValidationResult = { valid: boolean; error?: string };
 export type Channel = TextChannel | ThreadChannel;
 
 export type Deadline = {
+  id: string;
   courseChannelId: string;
   cohortId: string;
   assignment: string;
