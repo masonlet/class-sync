@@ -14,9 +14,11 @@ export type Channel = TextChannel | ThreadChannel;
 export type Deadline = {
   id: string;
   courseChannelId: string;
+  courseChannelName: string;
   cohortId: string;
+  reminderLocationId: string;
   assignment: string;
-  dueDate?: string;
+  dueDate: string;
 };
 
 

@@ -25,14 +25,26 @@ function buildDeadlineContent(deadlines) {
   return content;
 }
 
-async function createAndPinMessage(channel, content, guildId, messages, reminderLocationId) {
+async function createAndPinMessage(
+  channel,
+  content,
+  guildId,
+  messages,
+  reminderLocationId
+) {
   const newMessage = await channel.send(content);
   await newMessage.pin();
   messages[reminderLocationId] = newMessage.id;
   saveMessages(guildId, messages);
 }
 
-async function updateOrCreateMessage(channel, content, guildId, messages, reminderLocationId) {
+async function updateOrCreateMessage(
+  channel,
+  content,
+  guildId,
+  messages,
+  reminderLocationId
+) {
   const existingMessageId = messages[reminderLocationId];
 
   if (existingMessageId) {
@@ -47,7 +59,10 @@ async function updateOrCreateMessage(channel, content, guildId, messages, remind
   }
 }
 
-export async function updateDeadlineMessage(guild, reminderLocationId) {
+export async function updateDeadlineMessage(
+  guild,
+  reminderLocationId
+) {
   try {
     const channel = await guild.channels.fetch(reminderLocationId);
     if (!channel) {

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { getGuildDataPath, ensureGuildDir } from "./storageHelpers";
 
-export type MessageTracking = Record<string, unknown>;
+export type MessageTracking = Record<string, string>;
 
 export function loadMessages(guildId: string): MessageTracking {
   try {
