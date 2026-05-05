@@ -5,7 +5,6 @@ import {
 } from "discord.js";
 import type {
   CommandInputs,
-  ValidationResult,
   Channel,
   Deadline
 } from "../types"
@@ -16,38 +15,23 @@ export function extractCommandInputs(
   interaction: ChatInputCommandInteraction
 ): CommandInputs {
   return {
-    course: interaction.options.getString("course"),
-    cohort: interaction.options.getRole("cohort"),
-    assignment: interaction.options.getString("assignment"),
-    date: interaction.options.getString("date")
+    course: interaction.options.getString("course", true),
+    cohort: interaction.options.getRole("cohort", true),
+    assignment: interaction.options.getString("assignment", true),
+    date: interaction.options.getString("date", true)
   };
 }
 
-export function validateChannelResolution(
+export function isValidChannel(
   channel: Channel | "DUPLICATE" | null
-): ValidationResult {
-  if (!channel) return { 
-    valid: false, 
-    error: "Channel not found."
-  };
-
-  if (channel === "DUPLICATE") return { 
-    valid: false, 
-    error: "Multiple channels found."
-  };
-
-  return { valid: true };
+): channel is Channel {
+  return !!channel && channel !== "DUPLICATE";
 }
 
-export function validateChannelFilter(
+export function isValidChannelFilter(
   channel: Channel | "DUPLICATE" | null
-): ValidationResult {
-  if (channel === "DUPLICATE") return { 
-    valid: false, 
-    error: "Multiple channels match your filter. Please be more specific."
-  };
-  
-  return { valid: true };
+): channel is Channel | null {
+  return channel !== "DUPLICATE";
 }
 
 export function findDeadline(

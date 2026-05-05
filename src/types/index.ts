@@ -43,8 +43,8 @@ declare module "discord.js" {
 }
 
 export type CommandInputs = {
-  course: string | null;
-  cohort: Role | APIRole | null;
-  assignment: string | null;
-  date: string | null;
+  course: string;
+  cohort: Role | APIRole;
+  assignment: string;
+  date: string;
 };

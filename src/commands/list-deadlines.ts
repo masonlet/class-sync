@@ -3,7 +3,7 @@ import { loadDeadlines } from "../storage/deadlineStorage";
 import { resolveChannel } from "../services/channels";
 import { deferEphemeral, replyEphemeral } from "../utils/interactions";
 import { fromISO, discordTimestamp } from "../utils/time";
-import { validateChannelFilter, checkRateLimit } from "../utils/commandHelpers";
+import { isValidChannelFilter, checkRateLimit } from "../utils/commandHelpers";
 import { getActiveDeadlines } from "../utils/expiration";
 
 export const name = "list-deadlines";
@@ -41,14 +41,10 @@ export async function handle(
 
   if (courseFilter) {
     const channel = resolveChannel(interaction.guild, courseFilter);
+    if (!isValidChannelFilter(channel))
+      return replyEphemeral(interaction, "Multiple channels match your filter. Please be more specific.");
 
-    const channelValidation = validateChannelFilter(channel);
-    if (!channelValidation.valid)
-      return replyEphemeral(interaction, channelValidation.error);
-
-    if (channel && channel !== "DUPLICATE") deadlines = deadlines.filter(
-      d => d.courseChannelId === channel.id
-    );
+    if (channel) deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
   }
 
   if (cohortFilter) deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
