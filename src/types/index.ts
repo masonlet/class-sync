@@ -2,15 +2,15 @@ import {
   type APIRole,
   ChatInputCommandInteraction,
   Collection,
+  type RESTPostAPIChatInputApplicationCommandsJSONBody,
   Role,
-  SlashCommandBuilder,
   TextChannel,
   ThreadChannel
 } from "discord.js";
 
 export type Command = {
   name: string;
-  data: SlashCommandBuilder;
+  data: RESTPostAPIChatInputApplicationCommandsJSONBody;
   handle: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 
