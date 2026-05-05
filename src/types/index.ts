@@ -11,6 +11,9 @@ export type ValidationResult = { valid: boolean; error?: string };
 
 export type Channel = TextChannel | ThreadChannel;
 
+export type ReminderType = "24h" | "8h" | "1h";
+export type RemindersSent = Record<ReminderType, boolean>;
+
 export type Deadline = {
   id: string;
   courseChannelId: string;
@@ -19,6 +22,7 @@ export type Deadline = {
   reminderLocationId: string;
   assignment: string;
   dueDate: string;
+  remindersSent?: RemindersSent;
 };
 
 
