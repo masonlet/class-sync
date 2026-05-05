@@ -26,6 +26,7 @@ export type Deadline = {
   reminderLocationId: string;
   assignment: string;
   dueDate: string;
+  createdAt?: string;
   remindersSent?: RemindersSent;
 };
 
