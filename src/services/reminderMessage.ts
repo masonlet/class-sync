@@ -1,18 +1,22 @@
-import { loadDeadlines } from '../storage/deadlineStorage.js';
-import { loadMessages, saveMessages } from '../storage/messageStorage.js';
-import { fromISO, discordTimestamp } from '../utils/time.js';
-import { getActiveDeadlines } from '../utils/expiration.js';
+import { Guild, type GuildTextBasedChannel } from "discord.js";
+import type { Deadline } from "../types";
+import { loadDeadlines } from "../storage/deadlineStorage";
+import { loadMessages, saveMessages, type MessageTracking } from "../storage/messageStorage";
+import { fromISO, discordTimestamp } from "../utils/time";
+import { getActiveDeadlines } from "../utils/expiration";
 
-function sortDeadlinesByDate(deadlines) {
-  return deadlines.sort((a, b) => fromISO(a.dueDate) - fromISO(b.dueDate));
+function sortDeadlinesByDate(deadlines: Deadline[]): Deadline[] {
+  return deadlines.sort(
+    (a, b) => fromISO(a.dueDate).getTime() - fromISO(b.dueDate).getTime()
+  );
 }
 
-function formatDeadlineItem(deadline) {
+function formatDeadlineItem(deadline: Deadline): string {
   const dueDate = fromISO(deadline.dueDate);
   return `- **${deadline.assignment}** - ${deadline.courseChannelName} - Due: ${discordTimestamp(dueDate)} (${discordTimestamp(dueDate, 'R')})`;
 }
 
-function buildDeadlineContent(deadlines) {
+function buildDeadlineContent(deadlines: Deadline[]): string {
   let content = '**Upcoming Deadlines:**\n\n';
 
   if (deadlines.length === 0) {
@@ -26,12 +30,12 @@ function buildDeadlineContent(deadlines) {
 }
 
 async function createAndPinMessage(
-  channel,
-  content,
-  guildId,
-  messages,
-  reminderLocationId
-) {
+  channel: GuildTextBasedChannel,
+  content: string,
+  guildId: string,
+  messages: MessageTracking,
+  reminderLocationId: string
+): Promise<void> {
   const newMessage = await channel.send(content);
   await newMessage.pin();
   messages[reminderLocationId] = newMessage.id;
@@ -39,19 +43,19 @@ async function createAndPinMessage(
 }
 
 async function updateOrCreateMessage(
-  channel,
-  content,
-  guildId,
-  messages,
-  reminderLocationId
-) {
+  channel: GuildTextBasedChannel,
+  content: string,
+  guildId: string,
+  messages: MessageTracking,
+  reminderLocationId: string
+): Promise<void> {
   const existingMessageId = messages[reminderLocationId];
 
   if (existingMessageId) {
     try {
       const message = await channel.messages.fetch(existingMessageId);
       await message.edit(content);
-    } catch (error) {
+    } catch (_) {
       await createAndPinMessage(channel, content, guildId, messages, reminderLocationId);
     }
   } else {
@@ -60,12 +64,12 @@ async function updateOrCreateMessage(
 }
 
 export async function updateDeadlineMessage(
-  guild,
-  reminderLocationId
-) {
+  guild: Guild,
+  reminderLocationId: string
+): Promise<boolean> {
   try {
     const channel = await guild.channels.fetch(reminderLocationId);
-    if (!channel) {
+    if (!channel || !channel.isTextBased()) {
       console.error('Could not find reminder location channel');
       return false;
     }
@@ -73,7 +77,9 @@ export async function updateDeadlineMessage(
     const guildId = guild.id;
     const messages = loadMessages(guildId);
 
-    const locationDeadlines = loadDeadlines(guildId).filter(d => d.reminderLocationId === reminderLocationId);
+    const locationDeadlines = loadDeadlines(guildId).filter(
+      d => d.reminderLocationId === reminderLocationId
+    );
     const deadlines = getActiveDeadlines(locationDeadlines);
     
     let content = buildDeadlineContent(deadlines);
@@ -81,8 +87,8 @@ export async function updateDeadlineMessage(
     await updateOrCreateMessage(channel, content, guildId, messages, reminderLocationId);
 
     return true;
-  } catch (error) {
-    console.error('Failed to update deadline message:', error.message);
+  } catch (e) {
+    console.error('Failed to update deadline message:', e);
     return false;
   }
 }
