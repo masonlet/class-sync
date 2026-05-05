@@ -1,6 +1,9 @@
-import { Events } from 'discord.js';
+import { Events, Client, type Interaction } from 'discord.js';
 
-export async function handleCommandInteraction(interaction, client) {
+export async function handleCommandInteraction(
+  interaction: Interaction,
+  client: Client
+): Promise<void> {
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
@@ -8,12 +11,12 @@ export async function handleCommandInteraction(interaction, client) {
 
   try {
     await command.handle(interaction);
-  } catch (error) {
-    console.error(`Error in ${interaction.commandName}:`, error);
+  } catch (e) {
+    console.error(`Error in ${interaction.commandName}:`, e);
   }
 }
 
-export function setupInteractionHandler(client) {
+export function setupInteractionHandler(client: Client): void {
   client.on(Events.InteractionCreate, async interaction => {
     await handleCommandInteraction(interaction, client);
   });
