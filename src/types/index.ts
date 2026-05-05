@@ -5,8 +5,29 @@ import {
   type RESTPostAPIChatInputApplicationCommandsJSONBody,
   Role,
   TextChannel,
-  ThreadChannel
+  ForumChannel
 } from "discord.js";
+
+export type ValidationResult =
+| { valid: true }
+| { valid: false; error: string };
+
+export type Channel = TextChannel | ForumChannel;
+
+export type ReminderType = "24h" | "8h" | "1h";
+export type RemindersSent = Record<ReminderType, boolean>;
+
+export type Deadline = {
+  id: string;
+  courseChannelId: string;
+  courseChannelName: string;
+  cohortId: string;
+  cohortName: string;
+  reminderLocationId: string;
+  assignment: string;
+  dueDate: string;
+  remindersSent?: RemindersSent;
+};
 
 export type Command = {
   name: string;
@@ -26,23 +47,3 @@ export type CommandInputs = {
   assignment: string | null;
   date: string | null;
 };
-
-export type ValidationResult = { valid: boolean; error?: string };
-
-export type Channel = TextChannel | ThreadChannel;
-
-export type ReminderType = "24h" | "8h" | "1h";
-export type RemindersSent = Record<ReminderType, boolean>;
-
-export type Deadline = {
-  id: string;
-  courseChannelId: string;
-  courseChannelName: string;
-  cohortId: string;
-  reminderLocationId: string;
-  assignment: string;
-  dueDate: string;
-  remindersSent?: RemindersSent;
-};
-
-
