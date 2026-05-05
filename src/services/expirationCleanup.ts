@@ -1,9 +1,12 @@
-import { getActiveDeadlines } from '../utils/expiration.js';
-import { loadDeadlines, saveDeadlines } from '../storage/deadlineStorage.js';
+import { Client } from "discord.js";
+import { getActiveDeadlines } from "../utils/expiration";
+import { loadDeadlines, saveDeadlines } from "../storage/deadlineStorage";
 
-let cleanupInterval = null;
+let cleanupInterval: NodeJS.Timeout | null = null;
 
-export async function cleanupExpiredDeadlines(guildId) {
+export async function cleanupExpiredDeadlines(
+  guildId: string
+): Promise<{ removed: number; deadlineIds: string[] }> {
   const allDeadlines = loadDeadlines(guildId);
   const activeDeadlines = getActiveDeadlines(allDeadlines);
   const activeIds = new Set(activeDeadlines.map(d => d.id));
@@ -12,13 +15,12 @@ export async function cleanupExpiredDeadlines(guildId) {
     .filter(d => !activeIds.has(d.id))
     .map(d => d.id);
 
-  if (removedIds.length > 0)
-    saveDeadlines(guildId, activeDeadlines);
+  if (removedIds.length > 0) saveDeadlines(guildId, activeDeadlines);
 
   return { removed: removedIds.length, deadlineIds: removedIds };
 }
 
-function startInterval(client, intervalMinutes) {
+function startInterval(client: Client, intervalMinutes: number) {
   const intervalMs = intervalMinutes * 60 * 1000;
   console.log(`Starting expiration cleanup job (every ${intervalMinutes} minutes)`);
 
@@ -26,8 +28,9 @@ function startInterval(client, intervalMinutes) {
     try {
       for (const guild of client.guilds.cache.values()) {
         const result = await cleanupExpiredDeadlines(guild.id);
-        if (result.removed > 0)
-          console.log(`Cleaned up ${result.removed} expired deadline(s) in guild ${guild.id}`);
+        if (result.removed > 0) console.log(
+          `Cleaned up ${result.removed} expired deadline(s) in guild ${guild.id}`
+        );
       }
     } catch (error) {
       console.error('Error during expiration cleanup:', error);
@@ -35,14 +38,20 @@ function startInterval(client, intervalMinutes) {
   }, intervalMs);
 }
 
-export function startCleanupJob(client, intervalMinutes = 15) {
-  if (cleanupInterval) return console.log('Cleanup job already running');
+export function startCleanupJob(
+  client: Client | null | undefined,
+  intervalMinutes: number = 15
+): void {
+  if (cleanupInterval) {
+    console.log('Cleanup job already running');
+    return;
+  }
   if (!client) throw new Error('startCleanupJob was called without a client');
 
   startInterval(client, intervalMinutes);
 }
 
-export function stopCleanupJob() {
+export function stopCleanupJob(): void {
   if (cleanupInterval) {
     clearInterval(cleanupInterval);
     cleanupInterval = null;
