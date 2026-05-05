@@ -1,4 +1,21 @@
-import { type APIRole, Role, TextChannel, ThreadChannel } from "discord.js";
+import {
+  type APIRole,
+  ChatInputCommandInteraction,
+  Collection,
+  Role,
+  TextChannel,
+  ThreadChannel
+} from "discord.js";
+
+export type Command = {
+  handle: (interaction: ChatInputCommandInteraction) => Promise<void>;
+};
+
+declare module "discord.js" {
+  interface Client {
+    commands: Collection<string, Command>;
+  }
+}
 
 export type CommandInputs = {
   course: string | null;
