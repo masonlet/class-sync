@@ -3,11 +3,14 @@ import {
   ChatInputCommandInteraction,
   Collection,
   Role,
+  SlashCommandBuilder,
   TextChannel,
   ThreadChannel
 } from "discord.js";
 
 export type Command = {
+  name: string;
+  data: SlashCommandBuilder;
   handle: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 
