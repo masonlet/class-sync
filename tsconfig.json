@@ -46,6 +46,7 @@
   },
   "include": [
     "./src/**/*.ts",
+    "./tests/**/*.ts",
     "./deploy-commands.ts"
   ],
   "exclude": [
