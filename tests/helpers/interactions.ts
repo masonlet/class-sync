@@ -2,6 +2,7 @@
 
 import { vi } from "vitest";
 import type { ChatInputCommandInteraction, Role, APIRole } from "discord.js";
+import type { Deadline } from "../../src/types";
 
 type InteractionOverrides = {
   options?: Record<string, unknown>;
@@ -43,6 +44,18 @@ export const makeInteraction = (
     ...otherOverrides,
   } as unknown as ChatInputCommandInteraction;
 };
+
+export const makeDeadline = (overrides: Partial<Deadline> = {}): Deadline => ({
+  id: "1",
+  courseChannelId: "1",
+  courseChannelName: "general",
+  cohortId: "A",
+  cohortName: "Cohort A",
+  reminderLocationId: "1",
+  assignment: "Quiz 1",
+  dueDate: "2026-01-15T00:00:00.000Z",
+  ...overrides,
+});
 
 type CommandOptionInputs = {
   course?: string | null | undefined;
