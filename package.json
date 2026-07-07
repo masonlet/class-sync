@@ -2,7 +2,7 @@
   "name": "class-sync",
   "version": "0.0.1",
   "description": "Class Sync discord bot",
-  "main": "index.js",
+  "main": "dist/src/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

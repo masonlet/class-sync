@@ -3,6 +3,7 @@ deadlines.json
 messages.json
 /data/
 
+
 *.test.js.snap
 
 # Logs

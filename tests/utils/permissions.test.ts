@@ -77,13 +77,23 @@ describe('permissions', () => {
     });
 
     describe('edge cases', () => {
-      it('handles missing HELPER_ROLE_NAME environment variable', () => {
+      it('falls back to Helper role when env is unset', () => {
         const original = process.env['HELPER_ROLE_NAME'];
         delete process.env['HELPER_ROLE_NAME'];
         const interaction = makeHelperUser();
         const result = hasPermission(interaction);
-        expect(result).toBe(false);
+        expect(result).toBe(true);
         process.env['HELPER_ROLE_NAME'] = original;
+      });
+
+      it('uses Helper fallback in message when env is unset', async () => {
+        delete process.env['HELPER_ROLE_NAME'];
+        const interaction = makeRegularUser();
+        await denyPermission(interaction);
+        expect(replyEphemeral).toHaveBeenCalledWith(
+          interaction,
+          'You need the Helper role to use this.'
+        );
       });
 
       it('handles whitespace in role names', () => {
