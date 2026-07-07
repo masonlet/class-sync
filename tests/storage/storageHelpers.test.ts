@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { existsSync, mkdirSync                } from 'fs';
+import { existsSync, mkdirSync, rmSync        } from 'fs';
 import { join                                 } from 'path';
-import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/storageHelpers.js';
+import { getGuildDataPath, ensureGuildDir, deleteGuildData, DATA_DIR } from '../../src/storage/storageHelpers.js';
 
 vi.mock('fs');
 
@@ -106,6 +106,20 @@ describe('storage utils', () => {
 
     it('throws error when guildId is empty string', () => {
       expect(() => ensureGuildDir('' as unknown as string)).toThrow('guildId is required');
+    });
+  });
+
+  describe('deleteGuildData()', () => {
+    it('removes the guild directory recursively', () => {
+      deleteGuildData('123456789');
+      expect(rmSync).toHaveBeenCalledWith(
+        join(DATA_DIR, '123456789'),
+        { recursive: true, force: true }
+      );
+    });
+
+    it('throws error when guildId is empty string', () => {
+      expect(() => deleteGuildData('')).toThrow('guildId is required');
     });
   });
 });

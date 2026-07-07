@@ -20,13 +20,15 @@ export function setupInteractionHandler(client: Client): void {
   });
 }
 
+export async function handleGuildDelete(guild: { id: string }): Promise<void> {
+  try {
+    deleteGuildData(guild.id);
+    console.log(`Removed data for guild ${guild.id}`);
+  } catch (e) {
+    console.error(`Failed to remove data for guild ${guild.id}:`, e);
+  }
+}
+
 export function setupGuildDeleteHandler(client: Client): void {
-  client.on(Events.GuildDelete, guild => {
-    try {
-      deleteGuildData(guild.id);
-      console.log(`Removed data for guild ${guild.id}`);
-    } catch (e) {
-      console.error(`Failed to remove data for guild ${guild.id}:`, e);
-    }
-  });
+  client.on(Events.GuildDelete, handleGuildDelete);
 }
