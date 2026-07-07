@@ -2,7 +2,7 @@ const DEFAULT_MAX_USES = 5;
 const DEFAULT_WINDOW_MS = 10000;
 const CLEANUP_INTERVAL_MS = 60000;
 
-const cooldowns = new Map();
+const cooldowns = new Map<string, { count: number; resetTime: number }>();
 
 const intervalId = setInterval((): void => {
   const now = Date.now();
@@ -31,8 +31,7 @@ export function isLimited(
     return false;
   }
 
-  if (entry.count >= maxUses)
-    return true;
+  if (entry.count >= maxUses) return true;
 
   entry.count += 1;
 
@@ -45,9 +44,7 @@ export function getRemainingTime(
 ): number {
   const key = `${userId}-${commandName}`;
   const entry = cooldowns.get(key);
-
-  if (!entry || Date.now() >= entry.resetTime)
-    return 0;
+  if (!entry || Date.now() >= entry.resetTime) return 0;
 
   return Math.ceil((entry.resetTime - Date.now()) / 1000);
 }
