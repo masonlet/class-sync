@@ -2,11 +2,12 @@
   "name": "class-sync",
   "version": "0.0.1",
   "description": "Class Sync discord bot",
-  "main": "index.js",
+  "main": "dist/src/index.js",
   "type": "module",
   "scripts": {
-    "deploy": "node deploy-commands.js",
-    "start": "node src/index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "deploy": "npm run build && node dist/deploy-commands.js",
+    "start": "npm run build && node dist/src/index.js",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -19,6 +20,10 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^6.0.3",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "undici": "^6.27.0"
   }
 }

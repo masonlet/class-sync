@@ -1,0 +1,232 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ChannelType } from 'discord.js';
+import {
+  MockCollection, makeChannel, makeThread, makeGuild,
+  asMockChannel, asMockThread, asMockGuild
+} from '../helpers/discordMocks.js';
+import { getOrCreateReminderLocation } from '../../src/services/reminderLocation.js';
+import { loadMessages, saveMessages  } from '../../src/storage/messageStorage.js';
+
+vi.mock('../../src/storage/messageStorage');
+
+describe('reminderLocation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('forum channels', () => {
+    it('returns existing Due Dates thread', async () => {
+      const thread = makeThread('thread123', 'Due Dates');
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      const activeThreads = new MockCollection([['thread123', thread]]);
+      asMockChannel(forumChannel).threads.fetchActive.mockResolvedValue({
+        threads: activeThreads
+      });
+
+      const guild = makeGuild([forumChannel]);
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+      expect(result).toBe('thread123');
+      expect(asMockChannel(forumChannel).threads.create).not.toHaveBeenCalled();
+    });
+
+    it('creates new Due Dates thread if not found and registers starter message', async () => {
+      vi.mocked(loadMessages).mockReturnValue({});
+      const newThread = makeThread('thread456', 'Due Dates');
+      const starterMessage = { id: 'msg123' };
+      asMockThread(newThread).fetchStarterMessage.mockResolvedValue(starterMessage);
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      asMockChannel(forumChannel).threads.fetchActive.mockResolvedValue({
+        threads: new MockCollection()
+      });
+      asMockChannel(forumChannel).threads.create.mockResolvedValue(newThread);
+      const guild = makeGuild([forumChannel]);
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+      expect(result).toBe('thread456');
+      expect(asMockChannel(forumChannel).threads.create).toHaveBeenCalledWith({
+        name: 'Due Dates',
+        message: { content: '**Upcoming Deadlines:**\n\nNo deadlines.' }
+      });
+      expect(saveMessages).toHaveBeenCalledWith(
+        'guild123',
+        { 'thread456': 'msg123' }
+      );
+    });
+
+    it('does nothing if starter message is missing', async () => {
+      const newThread = makeThread('thread789', 'Due Dates');
+      asMockThread(newThread).fetchStarterMessage.mockResolvedValue(null);
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      asMockChannel(forumChannel).threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
+      asMockChannel(forumChannel).threads.create.mockResolvedValue(newThread);
+      vi.mocked(loadMessages).mockReturnValue({ existing: 'value' });
+      vi.mocked(saveMessages).mockImplementation(() => {});
+      const guild = makeGuild([forumChannel]);
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+      expect(result).toBe('thread789');
+      expect(saveMessages).not.toHaveBeenCalled();
+    });
+
+   it('returns null if forum thread creation fails with proper error', async () => {
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      asMockChannel(forumChannel).threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
+      asMockChannel(forumChannel).threads.create.mockRejectedValue(new Error('Permission denied'));
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const guild = makeGuild([forumChannel]);
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+      expect(result).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to create forum thread:',
+        expect.any(Error),
+      );
+      expect((consoleErrorSpy.mock.calls[0]![1] as Error).message).toBe('Permission denied');
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('text channels', () => {
+    it('returns existing due-dates channel', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const dueDatesChannel = makeChannel('2', 'cohort-due-dates', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel, dueDatesChannel]);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBe('2');
+      expect(asMockGuild(guild).channels.create).not.toHaveBeenCalled();
+    });
+
+    it('creates new due-dates channel if not found with correct name', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const newChannel = makeChannel('2', 'cohort-due-dates', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel]);
+      asMockGuild(guild).channels.create.mockResolvedValue(newChannel);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBe('2');
+      expect(asMockGuild(guild).channels.create).toHaveBeenCalledWith({
+        name: 'cohort-due-dates',
+        type: ChannelType.GuildText,
+        parent: 'parent123'
+      });
+    });
+
+    it('normalizes cohort name to lowercase', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const dueDatesChannel = makeChannel('2', 'a-due-dates', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel, dueDatesChannel]);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'A');
+      expect(result).toBe('2');
+    });
+
+    it('handles cohort names with spaces', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const dueDatesChannel = makeChannel('2', 'my-cohort-due-dates', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel, dueDatesChannel]);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'My Cohort');
+      expect(result).toBe('2');
+    });
+
+    it('finds channel in same category, not different category', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const wrongCategoryChannel = makeChannel('2', 'cohort-due-dates', ChannelType.GuildText, 'parent456');
+      const newChannel = makeChannel('3', 'cohort-due-dates', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel, wrongCategoryChannel]);
+      asMockGuild(guild).channels.create.mockResolvedValue(newChannel);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBe('3');
+      expect(asMockGuild(guild).channels.create).toHaveBeenCalled();
+    });
+
+    it('creates channel when course has no parent category (null)', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, null);
+      const newChannel = makeChannel('2', 'cohort-due-dates', ChannelType.GuildText, null);
+      const guild = makeGuild([courseChannel]);
+      asMockGuild(guild).channels.create.mockResolvedValue(newChannel);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBe('2');
+      expect(asMockGuild(guild).channels.create).toHaveBeenCalledWith({
+        name: 'cohort-due-dates',
+        type: ChannelType.GuildText,
+        parent: null,
+      });
+    });
+
+    it('creates channel when course has no parent category (undefined)', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, undefined);
+      const newChannel = makeChannel('2', 'cohort-due-dates', ChannelType.GuildText, undefined);
+      const guild = makeGuild([courseChannel]);
+      asMockGuild(guild).channels.create.mockResolvedValue(newChannel);
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBe('2');
+      expect(asMockGuild(guild).channels.create).toHaveBeenCalledWith({
+        name: 'cohort-due-dates',
+        type: ChannelType.GuildText,
+        parent: null,
+      });
+    });
+
+    it('returns null if channel creation fails with proper error', async () => {
+      const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+      const guild = makeGuild([courseChannel]);
+      asMockGuild(guild).channels.create.mockRejectedValue(new Error('Permission denied'));
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const result = await getOrCreateReminderLocation(guild, courseChannel, 'cohort');
+      expect(result).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to create due-dates channel:',
+        expect.any(Error)
+      );
+      consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('edge cases', () => {
+    it('returns null for unsupported channel type', async () => {
+      const voiceChannel = makeChannel('1', 'voice', ChannelType.GuildVoice);
+      const guild = makeGuild([voiceChannel]);
+      const result = await getOrCreateReminderLocation(guild, voiceChannel, 'cohort');
+      expect(result).toBeNull();
+    });
+
+    describe('cohort name edge cases', () => {
+      it('handles cohort names with special characters', async () => {
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const dueDatesChannel = makeChannel('2', 'cohort-2024-due-dates', ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel, dueDatesChannel]);
+        const result = await getOrCreateReminderLocation(guild, courseChannel, 'Cohort-2024!');
+        expect(result).toBe('2');
+      });
+
+      it('handles very long cohort names', async () => {
+        const longCohortName = 'a'.repeat(50);
+        const expectedChannelName = `${longCohortName.toLowerCase()}-due-dates`;
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const newChannel = makeChannel('2', expectedChannelName, ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel]);
+        asMockGuild(guild).channels.create.mockResolvedValue(newChannel);
+        const result = await getOrCreateReminderLocation(guild, courseChannel, longCohortName);
+        expect(result).toBe('2');
+      });
+
+      it('handles empty cohort name', async () => {
+        const courseChannel = makeChannel('1', 'course', ChannelType.GuildText, 'parent123');
+        const dueDatesChannel = makeChannel('2', '-due-dates', ChannelType.GuildText, 'parent123');
+        const guild = makeGuild([courseChannel, dueDatesChannel]);
+        const result = await getOrCreateReminderLocation(guild, courseChannel, '');
+        expect(result).toBe('2');
+      });
+    });
+  });
+
+  describe('error recovery', () => {
+    it('handles network timeout during thread creation', async () => {
+      const forumChannel = makeChannel('1', 'forum', ChannelType.GuildForum);
+      asMockChannel(forumChannel).threads.fetchActive.mockResolvedValue({ threads: new MockCollection() });
+      const timeoutError = Object.assign(new Error('Request timed out'), { code: 'ETIMEDOUT' });
+      asMockChannel(forumChannel).threads.create.mockRejectedValue(timeoutError);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const guild = makeGuild([forumChannel]);
+      const result = await getOrCreateReminderLocation(guild, forumChannel, 'cohort');
+      expect(result).toBeNull();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+  });
+});
