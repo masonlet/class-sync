@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, rmSync } from "fs";
 import { join } from "node:path";
 
 export const DATA_DIR = join(process.cwd(), "data");
@@ -23,4 +23,9 @@ export function ensureGuildDir(guildId: string): void {
   const guildDir = join(DATA_DIR, guildId);
   if (!existsSync(guildDir)) 
     mkdirSync(guildDir, { recursive: true });
+}
+
+export function deleteGuildData(guildId: string): void {
+  if (!guildId) throw new Error("guildId is required");
+  rmSync(join(DATA_DIR, guildId), { recursive: true, force: true });
 }
