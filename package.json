@@ -1,7 +1,15 @@
 {
   "name": "class-sync",
-  "version": "0.0.1",
   "description": "Class Sync discord bot",
+  "version": "0.0.1",
+  "author": "Mason L'Etoile",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/masonlet/class-sync.git"
+  },
+  "homepage": "https://github.com/masonlet/class-sync#readme",
+  "bugs": "https://github.com/masonlet/class-sync/issues",
   "main": "dist/src/index.js",
   "type": "module",
   "scripts": {
@@ -12,8 +20,6 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "author": "Mason L'Etoile",
-  "license": "MIT",
   "dependencies": {
     "chrono-node": "^2.9.0",
     "discord.js": "^14.25.1",
