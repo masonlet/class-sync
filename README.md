@@ -2,8 +2,8 @@
 Discord bot for syncing course deadlines across class channels and forums. Features automatic reminders, role-based cohort organization, and per-guild data isolation.
 
 [![CI](https://github.com/masonlet/class-sync/actions/workflows/ci.yml/badge.svg)](https://github.com/masonlet/class-sync/actions/workflows/ci.yml)
-[![Privacy Policy](https://img.shields.io/badge/Privacy-Policy-blue)](https://github.com/masonlet/class-sync-legal/blob/main/privacy.md)
-[![Terms of Service](https://img.shields.io/badge/Terms-of%20Service-blue)](https://github.com/masonlet/class-sync-legal/blob/main/tos.md)
+[![Privacy Policy](https://img.shields.io/badge/Privacy-Policy-blue)](./PRIVACY.md)
+[![Terms of Service](https://img.shields.io/badge/Terms-of%20Service-blue)](./TERMS.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## Features
@@ -87,8 +87,6 @@ npm test
 ```
 
 ## Privacy & Legal
-- [Privacy Policy](https://github.com/masonlet/class-sync-legal/blob/main/privacy.md)
-- [Terms of Service](https://github.com/masonlet/class-sync-legal/blob/main/tos.md)
-
-## License
-MIT License - see [LICENSE](./LICENSE) for details.
+- [Privacy Policy](./PRIVACY.md)
+- [Terms of Service](./TERMS.md)
+- [MIT License](./LICENSE)
