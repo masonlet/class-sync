@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
 import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup';
 import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
 import { getActiveDeadlines } from '../../src/utils/expiration';
+import type { MockInstance } from 'vitest';
+import type { Client } from 'discord.js';
+import type { Deadline } from '../../src/types';
+import { makeDeadline } from '../helpers/interactions';
 
 vi.mock('../../src/storage/deadlineStorage', () => ({
   loadDeadlines: vi.fn(),
@@ -12,13 +15,13 @@ vi.mock('../../src/utils/expiration', () => ({
   getActiveDeadlines: vi.fn(),
 }));
 
-const makeClient = () => ({
-  guilds: { cache: new Map() },
-});
+const makeClient = (guilds = new Map<string, { id: string }>()): Client => (
+  { guilds: { cache: guilds } } as unknown as Client
+);
 
 describe('expirationCleanup service', () => {
   const GUILD_ID = 'guild123';
-  let consoleLogSpy;
+  let consoleLogSpy: MockInstance;
   
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,16 +37,16 @@ describe('expirationCleanup service', () => {
   describe('cleanupExpiredDeadlines', () => {
     it('removes expired deadlines and returns count', async () => {
       const mockDeadlines = [
-        { id: '1', assignment: 'Test 1', dueDate: '2026-01-20T23:59:00Z' },
-        { id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' },
+        makeDeadline({ id: '1', assignment: 'Test 1', dueDate: '2026-01-20T23:59:00Z' }),
+        makeDeadline({ id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' }),
       ];
 
       const active = [
-        { id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' },
+        makeDeadline({ id: '2', assignment: 'Test 2', dueDate: '2026-01-25T23:59:00Z' }),
       ];
 
-      loadDeadlines.mockReturnValue(mockDeadlines);
-      getActiveDeadlines.mockReturnValue(active);
+      vi.mocked(loadDeadlines).mockReturnValue(mockDeadlines);
+      vi.mocked(getActiveDeadlines).mockReturnValue(active);
 
       const result = await cleanupExpiredDeadlines(GUILD_ID);
       
@@ -53,10 +56,10 @@ describe('expirationCleanup service', () => {
     });
 
     it('returns zero when no deadlines are expired', async () => {
-      const mockDeadlines = [{ id: '1' }];
+      const mockDeadlines = [makeDeadline({ id: '1' })];
 
-      loadDeadlines.mockReturnValue(mockDeadlines);
-      getActiveDeadlines.mockReturnValue(mockDeadlines);
+      vi.mocked(loadDeadlines).mockReturnValue(mockDeadlines);
+      vi.mocked(getActiveDeadlines).mockReturnValue(mockDeadlines);
 
       const result = await cleanupExpiredDeadlines(GUILD_ID);
 
@@ -67,15 +70,15 @@ describe('expirationCleanup service', () => {
 
     it('handles multiple expired deadlines', async () => {
       const all = [
-        { id: '1', assignment: 'Test 1' },
-        { id: '2', assignment: 'Test 2' },
-        { id: '3', assignment: 'Test 3' },
+        makeDeadline({ id: '1', assignment: 'Test 1' }),
+        makeDeadline({ id: '2', assignment: 'Test 2' }),
+        makeDeadline({ id: '3', assignment: 'Test 3' }),
       ];
 
-      const active = [];
+      const active: Deadline[] = [];
 
-      loadDeadlines.mockReturnValue(all);
-      getActiveDeadlines.mockReturnValue(active);
+      vi.mocked(loadDeadlines).mockReturnValue(all);
+      vi.mocked(getActiveDeadlines).mockReturnValue(active);
 
       const result = await cleanupExpiredDeadlines(GUILD_ID);
 
@@ -85,8 +88,8 @@ describe('expirationCleanup service', () => {
     });
 
     it('handles empty deadline list', async () => {
-      loadDeadlines.mockReturnValue([]);
-      getActiveDeadlines.mockReturnValue([]);
+      vi.mocked(loadDeadlines).mockReturnValue([]);
+      vi.mocked(getActiveDeadlines).mockReturnValue([]);
 
       const result = await cleanupExpiredDeadlines(GUILD_ID);
 
@@ -127,19 +130,14 @@ describe('expirationCleanup service', () => {
     });
 
     it('runs cleanup at specified interval', async () => {
-      const guildA = { id: 'A' };
-      const guildB = { id: 'B' };
+      const mockClient = makeClient(new Map([['A', { id: 'A' }], ['B', { id: 'B' }]]));
 
-      const mockClient = {
-        guilds: { cache: new Map([['A', guildA], ['B', guildB]]) }
-      };
+      vi.mocked(loadDeadlines).mockReturnValue([]);
+      vi.mocked(getActiveDeadlines).mockReturnValue([]);
 
-      loadDeadlines.mockReturnValue([]);
-      getActiveDeadlines.mockReturnValue([]);
+      startCleanupJob(mockClient, 1);
 
-      startCleanupJob(mockClient, 1); 
-
-      vi.advanceTimersByTime(60000); 
+      vi.advanceTimersByTime(60000);
       await Promise.resolve();
 
       expect(loadDeadlines).toHaveBeenCalledWith('A');
