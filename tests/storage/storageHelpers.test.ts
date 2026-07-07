@@ -1,13 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync        } from 'fs';
-import { join                                 } from 'path';
-import { getGuildDataPath, ensureGuildDir, deleteGuildData, DATA_DIR } from '../../src/storage/storageHelpers.js';
+import { describe, it, expect, vi, beforeEach                                    } from 'vitest';
+import { existsSync, mkdirSync, rmSync, readdirSync, readFileSync, writeFileSync } from 'fs';
+import { join                                                                    } from 'path';
+import {
+  getGuildDataPath,
+  ensureGuildDir,
+  deleteGuildData,
+  markGuildRemoved,
+  clearGuildRemoved,
+  getRemovedGuildsOlderThan,
+  DATA_DIR
+} from '../../src/storage/storageHelpers.js';
 
 vi.mock('fs');
 
 describe('storage utils', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('getGuildDataPath()', () => {
@@ -120,6 +129,85 @@ describe('storage utils', () => {
 
     it('throws error when guildId is empty string', () => {
       expect(() => deleteGuildData('')).toThrow('guildId is required');
+    });
+  });
+
+  describe('markGuildRemoved()', () => {
+    it('writes removal marker when guild dir exists', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.spyOn(Date, 'now').mockReturnValue(1000000);
+
+      markGuildRemoved('123456789');
+
+      expect(writeFileSync).toHaveBeenCalledWith(
+        join(DATA_DIR, '123456789', 'removed.json'),
+        JSON.stringify({ removedAt: 1000000 }, null, 2)
+      );
+    });
+
+    it('does nothing when guild dir does not exist', () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      markGuildRemoved('123456789');
+      expect(writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('throws error when guildId is empty string', () => {
+      expect(() => markGuildRemoved('')).toThrow('guildId is required');
+    });
+  });
+
+  describe('clearGuildRemoved()', () => {
+    it('removes the marker file', () => {
+      clearGuildRemoved('123456789');
+      expect(rmSync).toHaveBeenCalledWith(
+        join(DATA_DIR, '123456789', 'removed.json'),
+        { force: true }
+      );
+    });
+
+    it('throws error when guildId is empty string', () => {
+      expect(() => clearGuildRemoved('')).toThrow('guildId is required');
+    });
+  });
+
+  describe('getRemovedGuildsOlderThan()', () => {
+    it('returns empty array when data dir does not exist', () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      expect(getRemovedGuildsOlderThan(1000)).toEqual([]);
+    });
+
+    it('returns only guilds whose marker is older than maxAge', () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readdirSync).mockReturnValue(['old-guild', 'new-guild'] as never);
+      vi.spyOn(Date, 'now').mockReturnValue(10000);
+      vi.mocked(readFileSync).mockImplementation((path) =>
+        String(path).includes('old-guild')
+          ? JSON.stringify({ removedAt: 1000 })
+          : JSON.stringify({ removedAt: 9500 })
+      );
+
+      expect(getRemovedGuildsOlderThan(5000)).toEqual(['old-guild']);
+    });
+
+    it('skips guilds without a marker', () => {
+      vi.mocked(existsSync).mockImplementation((path) =>
+        String(path) === DATA_DIR
+      );
+      vi.mocked(readdirSync).mockReturnValue(['guild-a'] as never);
+
+      expect(getRemovedGuildsOlderThan(1000)).toEqual([]);
+      expect(readFileSync).not.toHaveBeenCalled();
+    });
+
+    it('logs and skips guilds with unreadable markers', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readdirSync).mockReturnValue(['bad-guild'] as never);
+      vi.mocked(readFileSync).mockReturnValue('not json');
+
+      expect(getRemovedGuildsOlderThan(1000)).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
 });
