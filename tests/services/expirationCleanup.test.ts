@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import type { Client                                                        } from 'discord.js';
+import * as storageHelpers                                          from '../../src/storage/storageHelpers.js';
+import { purgeRemovedGuilds                                       } from '../../src/services/expirationCleanup.js';
 import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup.js';
 import { loadDeadlines, saveDeadlines                             } from '../../src/storage/deadlineStorage.js';
 import { getActiveDeadlines                                       } from '../../src/utils/expiration.js';
@@ -141,6 +143,29 @@ describe('expirationCleanup service', () => {
 
       expect(loadDeadlines).toHaveBeenCalledWith('A');
       expect(loadDeadlines).toHaveBeenCalledWith('B');
+    });
+  });
+
+  describe('purgeRemovedGuilds', () => {
+    afterEach(() => { vi.restoreAllMocks(); });
+
+    it('deletes data for guilds past the grace period', () => {
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      vi.spyOn(storageHelpers, 'getRemovedGuildsOlderThan').mockReturnValue(['g1', 'g2']);
+      const deleteSpy = vi.spyOn(storageHelpers, 'deleteGuildData').mockImplementation(() => {});
+
+      expect(purgeRemovedGuilds()).toBe(2);
+      expect(deleteSpy).toHaveBeenCalledWith('g1');
+      expect(deleteSpy).toHaveBeenCalledWith('g2');
+      consoleLogSpy.mockRestore();
+    });
+
+    it('does nothing when no guilds are expired', () => {
+      vi.spyOn(storageHelpers, 'getRemovedGuildsOlderThan').mockReturnValue([]);
+      const deleteSpy = vi.spyOn(storageHelpers, 'deleteGuildData');
+
+      expect(purgeRemovedGuilds()).toBe(0);
+      expect(deleteSpy).not.toHaveBeenCalled();
     });
   });
 });

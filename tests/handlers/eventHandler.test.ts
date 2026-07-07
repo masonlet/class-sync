@@ -1,7 +1,11 @@
-import { handleCommandInteraction, handleGuildDelete } from '../../src/handlers/eventHandler.js';
-import * as storageHelpers                             from '../../src/storage/storageHelpers.js';
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock, type MockInstance } from 'vitest';
 import type { Client, Interaction } from 'discord.js';
+import * as storageHelpers from '../../src/storage/storageHelpers.js';
+import {
+  handleCommandInteraction,
+  handleGuildDelete,
+  handleGuildCreate
+} from '../../src/handlers/eventHandler.js';
 
 type MockCommand = { handle: Mock };
 type MockInteraction = { isChatInputCommand: Mock; commandName: string };
@@ -54,7 +58,7 @@ describe('event handler', () => {
     });
   });
 
-  describe('handleGuildDelete', () => {
+  describe('guild lifecycle handlers', () => {
     let consoleLogSpy: MockInstance;
     let consoleErrorSpy: MockInstance;
 
@@ -69,18 +73,31 @@ describe('event handler', () => {
       vi.restoreAllMocks();
     });
 
-    it('deletes guild data on removal', async () => {
-      const spy = vi.spyOn(storageHelpers, 'deleteGuildData').mockImplementation(() => {});
+    it('marks guild for removal on delete', async () => {
+      const spy = vi.spyOn(storageHelpers, 'markGuildRemoved').mockImplementation(() => {});
       await handleGuildDelete({ id: 'guild-1' });
       expect(spy).toHaveBeenCalledWith('guild-1');
-      expect(consoleLogSpy).toHaveBeenCalledWith('Removed data for guild guild-1');
+      expect(consoleLogSpy).toHaveBeenCalledWith('Marked guild guild-1 for data removal in 30 days');
     });
 
-    it('logs error when deletion fails', async () => {
-      const error = new Error('rm failed');
-      vi.spyOn(storageHelpers, 'deleteGuildData').mockImplementation(() => { throw error; });
+    it('logs error when marking fails', async () => {
+      const error = new Error('write failed');
+      vi.spyOn(storageHelpers, 'markGuildRemoved').mockImplementation(() => { throw error; });
       await handleGuildDelete({ id: 'guild-1' });
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to remove data for guild guild-1:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to mark guild guild-1 for removal:', error);
+    });
+
+    it('clears removal marker when bot rejoins', async () => {
+      const spy = vi.spyOn(storageHelpers, 'clearGuildRemoved').mockImplementation(() => {});
+      await handleGuildCreate({ id: 'guild-1' });
+      expect(spy).toHaveBeenCalledWith('guild-1');
+    });
+
+    it('logs error when clearing marker fails', async () => {
+      const error = new Error('rm failed');
+      vi.spyOn(storageHelpers, 'clearGuildRemoved').mockImplementation(() => { throw error; });
+      await handleGuildCreate({ id: 'guild-1' });
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to clear removal marker for guild guild-1:', error);
     });
   });
 });
