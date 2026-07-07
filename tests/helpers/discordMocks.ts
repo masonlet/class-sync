@@ -2,6 +2,23 @@ import { ChannelType } from "discord.js";
 import type { Guild, ThreadChannel } from "discord.js";
 import type { Channel } from "../../src/types";
 import { vi } from "vitest";
+import type { Mock } from "vitest";
+
+export type MockChannelInternals = {
+  threads: { create: Mock; fetchActive: Mock };
+  messages: { fetch: Mock };
+  send: Mock;
+};
+export type MockGuildInternals = {
+  channels: { fetch: Mock; create: Mock };
+};
+
+export const asMockChannel = (c: Channel): MockChannelInternals =>
+  c as unknown as MockChannelInternals;
+export const asMockGuild = (g: Guild): MockGuildInternals =>
+  g as unknown as MockGuildInternals;
+export const asMockThread = (t: ThreadChannel): { fetchStarterMessage: Mock } =>
+  t as unknown as { fetchStarterMessage: Mock };
 
 export class MockCollection<K, V> extends Map<K, V> {
   filter(fn: (value: V, key: K, collection: this) => boolean): MockCollection<K, V> {
