@@ -1,11 +1,8 @@
 import { describe, it, expect } from 'vitest';
-
 import { ChannelType } from 'discord.js';
-
 import { makeChannel, makeGuild } from '../helpers/discordMocks';
-
 import { resolveChannel, isForumChannel, isTextChannel } from '../../src/services/channels';
-
+import type { Channel } from '../../src/types';
 
 describe('channels', () => {
   describe('resolveChannel()', () => {
@@ -34,7 +31,7 @@ describe('channels', () => {
 
     describe('performance and edge cases', () => {
       it('handles large channel collections efficiently', () => {
-        const channels = [];
+        const channels: Channel[] = [];
         for (let i = 0; i < 1000; i++) {
           channels.push(makeChannel(`${i}`, `channel-${i}`));
         }
@@ -45,7 +42,7 @@ describe('channels', () => {
         const result = resolveChannel(guild, 'target-channel');
         const duration = Date.now() - start;
 
-        expect(result.id).toBe('target');
+        expect((result as Channel).id).toBe('target');
         expect(duration).toBeLessThan(100);
       });
 
