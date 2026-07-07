@@ -32,8 +32,6 @@ Discord bot for syncing course deadlines across class channels and forums. Featu
 | `/list-deadlines` | View all deadlines (with optional filters) | Everyone |
 | `/status` | Check if bot is running | Everyone |
 
-<br/>
-
 ## Setup
 
 ### Prerequisites
@@ -87,8 +85,6 @@ Run Tests
 ```bash
 npm test
 ```
-
-<br/>
 
 ## Privacy & Legal
 - [Privacy Policy](https://github.com/masonlet/class-sync-legal/blob/main/privacy.md)
