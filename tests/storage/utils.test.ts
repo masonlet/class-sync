@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
-
-import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/utils';
+import { existsSync, mkdirSync                } from 'fs';
+import { join                                 } from 'path';
+import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/storageHelpers';
 
 vi.mock('fs');
 
@@ -29,11 +27,11 @@ describe('storage utils', () => {
     });
 
     it('throws error when guildId is null', () => {
-      expect(() => getGuildDataPath(null, 'deadlines.json')).toThrow('guildId is required');
+      expect(() => getGuildDataPath(null as unknown as string, 'deadlines.json')).toThrow('guildId is required');
     });
 
     it('throws error when guildId is undefined', () => {
-      expect(() => getGuildDataPath(undefined, 'deadlines.json')).toThrow('guildId is required');
+      expect(() => getGuildDataPath(undefined as unknown as string, 'deadlines.json')).toThrow('guildId is required');
     });
 
     it('throws error when guildId is empty string', () => {
@@ -41,11 +39,11 @@ describe('storage utils', () => {
     });
 
     it('throws error when filename is null', () => {
-      expect(() => getGuildDataPath('123456789', null)).toThrow('filename is required');
+      expect(() => getGuildDataPath('123456789', null as unknown as string)).toThrow('filename is required');
     });
 
     it('throws error when filename is undefined', () => {
-      expect(() => getGuildDataPath('123456789', undefined)).toThrow('filename is required');
+      expect(() => getGuildDataPath('123456789', undefined as unknown as string)).toThrow('filename is required');
     });
 
     it('throws error when filename is empty string', () => {
@@ -67,7 +65,7 @@ describe('storage utils', () => {
 
   describe('ensureGuildDir()', () => {
     it('creates directory when it does not exist', () => {
-      existsSync.mockReturnValue(false);
+      vi.mocked(existsSync).mockReturnValue(false);
       
       ensureGuildDir('123456789');
       
@@ -79,7 +77,7 @@ describe('storage utils', () => {
     });
 
     it('does not create directory when it already exists', () => {
-      existsSync.mockReturnValue(true);
+      vi.mocked(existsSync).mockReturnValue(true);
       
       ensureGuildDir('123456789');
       
@@ -88,7 +86,7 @@ describe('storage utils', () => {
     });
 
     it('handles different guild IDs', () => {
-      existsSync.mockReturnValue(false);
+      vi.mocked(existsSync).mockReturnValue(false);
       
       ensureGuildDir('987654321');
       
@@ -99,15 +97,15 @@ describe('storage utils', () => {
     });
 
     it('throws error when guildId is null', () => {
-      expect(() => ensureGuildDir(null)).toThrow('guildId is required');
+      expect(() => ensureGuildDir(null as unknown as string)).toThrow('guildId is required');
     });
 
     it('throws error when guildId is undefined', () => {
-      expect(() => ensureGuildDir(undefined)).toThrow('guildId is required');
+      expect(() => ensureGuildDir(undefined as unknown as string)).toThrow('guildId is required');
     });
 
     it('throws error when guildId is empty string', () => {
-      expect(() => ensureGuildDir('')).toThrow('guildId is required');
+      expect(() => ensureGuildDir('' as unknown as string)).toThrow('guildId is required');
     });
   });
 });
