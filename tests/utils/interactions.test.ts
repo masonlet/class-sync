@@ -32,7 +32,7 @@ describe('interactions', () => {
     it('catches error code 10062 (unknown interaction)', async () => {
       const interaction = makeInteraction();
       vi.mocked(interaction.deferReply).mockRejectedValue({ code: 10062 });
-      await expectIgnoreErrorCode(() => deferEphemeral(interaction), 10062);
+      await expectIgnoreErrorCode(() => deferEphemeral(interaction));
     });
 
     it('catches error code 40060 (already acknowledged)', async () => {
