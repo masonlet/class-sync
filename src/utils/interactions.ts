@@ -25,7 +25,7 @@ export async function deferEphemeral(
 }
 
 export async function replyEphemeral(
-  interaction: ChatInputCommandInteraction, 
+  interaction: ChatInputCommandInteraction,
   content: string
 ): Promise<void> {
   try {

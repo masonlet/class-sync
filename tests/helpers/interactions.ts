@@ -7,6 +7,8 @@ type InteractionOverrides = {
   options?: Record<string, unknown>;
   roleNames?: string[];
   isAdmin?: boolean;
+  deferred?: boolean;
+  replied?: boolean;
 }
 
 export const makeInteraction = (
