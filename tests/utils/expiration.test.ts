@@ -1,36 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
+import type { Deadline } from '../../src/types';
 import { now, fromISO } from '../../src/utils/time';
+import { makeDeadline } from '../helpers/interactions';
+import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
 
 vi.mock('../../src/utils/time');
 
 describe('expiration utils', () => {
   beforeEach(() => {
-    const fixedNow = new Date('2026-01-15T23:59:00Z');
-    now.mockReturnValue(fixedNow);
-    fromISO.mockImplementation((isoString) => new Date(isoString));
+    vi.mocked(now).mockReturnValue(new Date('2026-01-15T23:59:00Z'));
+    vi.mocked(fromISO).mockImplementation((isoString: string) => new Date(isoString));
   });
 
   describe('isDeadlineExpired', () => {
     it('returns false for deadlines without dueDate', () => {
-      expect(isDeadlineExpired({})).toBe(false);
-      expect(isDeadlineExpired(null)).toBe(false);
-      expect(isDeadlineExpired(undefined)).toBe(false);
+      expect(isDeadlineExpired({} as Deadline)).toBe(false);
+      expect(isDeadlineExpired(null as unknown as Deadline)).toBe(false);
+      expect(isDeadlineExpired(undefined as unknown as Deadline)).toBe(false);
     });
 
     it('returns false for future deadlines', () => {
-      const deadline = { dueDate: '2026-01-20T23:59:00Z' };
+      const deadline = makeDeadline({ dueDate: '2026-01-20T23:59:00Z' });
       expect(isDeadlineExpired(deadline)).toBe(false);
     });
 
     it('returns true for past deadlines', () => {
-      const deadline = { dueDate: '2026-01-10T23:59:00Z' };
+      const deadline = makeDeadline({ dueDate: '2026-01-10T23:59:00Z' });
       expect(isDeadlineExpired(deadline)).toBe(true);
     });
 
     it('returns true for deadlines at current time', () => {
-      const deadline = { dueDate: '2026-01-15T23:59:00Z' };
+      const deadline = makeDeadline({ dueDate:'2026-01-15T23:59:00Z' });
       expect(isDeadlineExpired(deadline)).toBe(true);
     });
   });
@@ -42,9 +42,9 @@ describe('expiration utils', () => {
 
     it('filters out expired deadlines', () => {
       const deadlines = [
-        { id: '1', dueDate: '2026-01-20T23:59:00Z' },
-        { id: '2', dueDate: '2026-01-10T23:59:00Z' },
-        { id: '3', dueDate: '2026-01-25T23:59:00Z' },
+        makeDeadline({ id: '1', dueDate: '2026-01-20T23:59:00Z' }),
+        makeDeadline({ id: '2', dueDate: '2026-01-10T23:59:00Z' }),
+        makeDeadline({ id: '3', dueDate: '2026-01-25T23:59:00Z' }),
       ];
 
       const result = getActiveDeadlines(deadlines);
@@ -60,9 +60,9 @@ describe('expiration utils', () => {
 
     it('returns only expired deadlines', () => {
       const deadlines = [
-        { id: '1', dueDate: '2026-01-20T23:59:00Z' },
-        { id: '2', dueDate: '2026-01-10T23:59:00Z' },
-        { id: '3', dueDate: '2026-01-05T23:59:00Z' },
+        makeDeadline({ id: '1', dueDate: '2026-01-20T23:59:00Z' }),
+        makeDeadline({ id: '2', dueDate: '2026-01-10T23:59:00Z' }),
+        makeDeadline({ id: '3', dueDate: '2026-01-05T23:59:00Z' }),
       ];
 
       const result = getExpiredDeadlines(deadlines);
