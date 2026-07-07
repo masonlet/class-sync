@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-import { makeChannel, makeGuild } from '../helpers/discordMocks';
-
+import { asMockChannel, asMockGuild, makeChannel, makeGuild } from '../helpers/discordMocks';
 import { updateDeadlineMessage } from '../../src/services/reminderMessage';
 import { loadDeadlines } from '../../src/storage/deadlineStorage';
 import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
 import { fromISO, discordTimestamp } from '../../src/utils/time';
+import { makeDeadline } from '../helpers/interactions';
 
 vi.mock('../../src/storage/deadlineStorage');
 vi.mock('../../src/storage/messageStorage');
@@ -14,8 +13,8 @@ vi.mock('../../src/utils/time');
 describe('reminderMessage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    fromISO.mockImplementation((isoString) => new Date(isoString));
-    discordTimestamp.mockImplementation((date, format = 'f') => {
+    vi.mocked(fromISO).mockImplementation((isoString) => new Date(isoString));
+    vi.mocked(discordTimestamp).mockImplementation((_date, format = 'f') => {
       if (format === 'R') return '<t:123456:R>';
       return `<t:123456:${format}>`;
     });
@@ -24,29 +23,29 @@ describe('reminderMessage', () => {
   describe('updateDeadlineMessage()', () => {
     describe('message creation', () => {
       it('creates and pins new message when no existing message', async () => {
-        loadMessages.mockReturnValue({});
-        loadDeadlines.mockReturnValue([
-          {
+        vi.mocked(loadMessages).mockReturnValue({});
+        vi.mocked(loadDeadlines).mockReturnValue([
+          makeDeadline({
             assignment: 'Assignment 1',
             courseChannelName: 'INFO0001',
             dueDate: '2026-01-01T23:59:00.000Z',
             reminderLocationId: 'channel123'
-          }
+          })
         ]);
-      
+
         const newMessage = {
           id: 'msg456',
           pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+       asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const result = await updateDeadlineMessage(guild, 'channel123');
         expect(result).toBe(true);
-        expect(channel.send).toHaveBeenCalledWith(
+        expect(asMockChannel(channel).send).toHaveBeenCalledWith(
           expect.stringContaining('**Upcoming Deadlines:**')
         );
         expect(newMessage.pin).toHaveBeenCalled();
@@ -57,14 +56,14 @@ describe('reminderMessage', () => {
       });
 
       it('updates existing message when message exists', async () => {
-        loadMessages.mockReturnValue({ 'channel123': 'msg456' });
-        loadDeadlines.mockReturnValue([
-          {
+        vi.mocked(loadMessages).mockReturnValue({ 'channel123': 'msg456' });
+        vi.mocked(loadDeadlines).mockReturnValue([
+          makeDeadline({
             assignment: 'Assignment 1',
             courseChannelName: 'INFO0001',
             dueDate: '2026-01-01T23:59:00.000Z',
             reminderLocationId: 'channel123'
-          }
+          })
         ]);
 
         const existingMessage = {
@@ -72,38 +71,38 @@ describe('reminderMessage', () => {
           edit: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.messages.fetch.mockResolvedValue(existingMessage);
+       asMockChannel(channel).messages.fetch.mockResolvedValue(existingMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const result = await updateDeadlineMessage(guild, 'channel123');
         expect(result).toBe(true);
-        expect(channel.messages.fetch).toHaveBeenCalledWith('msg456');
+        expect(asMockChannel(channel).messages.fetch).toHaveBeenCalledWith('msg456');
         expect(existingMessage.edit).toHaveBeenCalledWith(
           expect.stringContaining('**Upcoming Deadlines:**')
         );
-        expect(channel.send).not.toHaveBeenCalled();
+        expect(asMockChannel(channel).send).not.toHaveBeenCalled();
       });
 
       it('creates new message when existing message is deleted', async () => {
-        loadMessages.mockReturnValue({ 'channel123': 'msg999' });
-        loadDeadlines.mockReturnValue([]);
+        vi.mocked(loadMessages).mockReturnValue({ 'channel123': 'msg999' });
+        vi.mocked(loadDeadlines).mockReturnValue([]);
 
         const newMessage = {
           id: 'msg123',
           pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.messages.fetch.mockRejectedValue(new Error('Unknown Message'));
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).messages.fetch.mockRejectedValue(new Error('Unknown Message'));
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const result = await updateDeadlineMessage(guild, 'channel123');
         expect(result).toBe(true);
-        expect(channel.send).toHaveBeenCalled();
+        expect(asMockChannel(channel).send).toHaveBeenCalled();
         expect(newMessage.pin).toHaveBeenCalled();
         expect(saveMessages).toHaveBeenCalledWith(
           'guild123',
@@ -113,35 +112,35 @@ describe('reminderMessage', () => {
 
       describe('message content formatting', () => {
         it('displays "No deadlines" when no deadlines exist', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([]);
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([]);
 
           const newMessage = {
             id: 'msg222',
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          expect(channel.send).toHaveBeenCalledWith(
+          expect(asMockChannel(channel).send).toHaveBeenCalledWith(
             '**Upcoming Deadlines:**\n\nNo deadlines.'
           );
         });
 
         it('formats single deadline correctly', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Final Project',
               courseChannelName: 'INFO-5101',
               dueDate: '2026-01-01T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -149,27 +148,27 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          expect(channel.send).toHaveBeenCalledWith(
+          expect(asMockChannel(channel).send).toHaveBeenCalledWith(
             expect.stringMatching(/\*\*Upcoming Deadlines:\*\*\n\n- \*\*Final Project\*\* - INFO-5101 - Due:/)
           );
         });
 
         it('renders exact deadline message format', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Final Project',
               courseChannelName: 'INFO-5101',
               dueDate: '2026-02-01T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -177,44 +176,44 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          expect(channel.send).toHaveBeenCalledWith(
+          expect(asMockChannel(channel).send).toHaveBeenCalledWith(
             '**Upcoming Deadlines:**\n\n- **Final Project** - INFO-5101 - Due: <t:123456:f> (<t:123456:R>)'
           );
         });
 
         it('sorts deadlines by due date ascending', async () => {
-          loadMessages.mockReturnValue({});
+          vi.mocked(loadMessages).mockReturnValue({});
 
           const laterDate = '2026-03-30T23:59:00.000Z';
           const middleDate = '2026-02-15T23:59:00.000Z';
           const earlierDate = '2026-01-30T23:59:00.000Z';
 
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Assignment 3',
               courseChannelName: 'INFO0001',
               dueDate: laterDate,
               reminderLocationId: 'channel123'
-            },
-            {
+            }),
+            makeDeadline({
               assignment: 'Assignment 1',
               courseChannelName: 'INFO0001',
               dueDate: earlierDate,
               reminderLocationId: 'channel123'
-            },
-            {
+            }),
+            makeDeadline({
               assignment: 'Assignment 2',
               courseChannelName: 'INFO0001',
               dueDate: middleDate,
               reminderLocationId: 'channel123'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -222,14 +221,14 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          const sentContent = channel.send.mock.calls[0][0];
+          const sentContent = asMockChannel(channel).send.mock.calls[0]![0] as string;
           const assignment1Index = sentContent.indexOf('Assignment 1');
           const assignment2Index = sentContent.indexOf('Assignment 2');
           const assignment3Index = sentContent.indexOf('Assignment 3');
@@ -239,20 +238,20 @@ describe('reminderMessage', () => {
         });
 
         it('formats multiple deadlines with line breaks', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Quiz 1',
               courseChannelName: 'INFO0001',
               dueDate: '2026-01-01T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            },
-            {
+            }),
+            makeDeadline({
               assignment: 'Assignment 3',
               courseChannelName: 'INFO0001',
               dueDate: '2026-01-01T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -260,34 +259,34 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          const sentContent = channel.send.mock.calls[0][0];
+          const sentContent = asMockChannel(channel).send.mock.calls[0]![0] as string;
           expect(sentContent).toContain('Quiz 1');
           expect(sentContent).toContain('Assignment 3');
           expect(sentContent.split('\n').filter(line => line.startsWith('-')).length).toBe(2);
         });
 
         it('renders duplicate deadlines as separate entries', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Midterm Exam',
               courseChannelName: 'CS101',
               dueDate: '2026-01-20T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            },
-            {
+            }),
+            makeDeadline({
               assignment: 'Midterm Exam',
               courseChannelName: 'CS101',
               dueDate: '2026-01-20T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -295,34 +294,34 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          const sentContent = channel.send.mock.calls[0][0];
-          expect(sentContent.match(/- \*\*/g).length).toBe(2);
+          const sentContent = asMockChannel(channel).send.mock.calls[0]![0] as string;
+          expect(sentContent.match(/- \*\*/g)!.length).toBe(2);
         });
       });
 
       describe('deadline filtering', () => {
         it('only includes deadlines for the specified reminder location', async () => {
-          loadMessages.mockReturnValue({});
-          loadDeadlines.mockReturnValue([
-            {
+          vi.mocked(loadMessages).mockReturnValue({});
+          vi.mocked(loadDeadlines).mockReturnValue([
+            makeDeadline({
               assignment: 'Assignment A',
               courseChannelName: 'INFO0001',
               dueDate: '2026-01-01T23:59:00.000Z',
               reminderLocationId: 'channel123'
-            },
-            {
+            }),
+            makeDeadline({
               assignment: 'Assignment B',
               courseChannelName: 'INFO0002',
               dueDate: '2026-01-01T23:59:00.000Z',
               reminderLocationId: 'channel456'
-            }
+            })
           ]);
 
           const newMessage = {
@@ -330,14 +329,14 @@ describe('reminderMessage', () => {
             pin: vi.fn().mockResolvedValue(undefined)
           };
           const channel = makeChannel('channel123', 'due-dates');
-          channel.send.mockResolvedValue(newMessage);
+          asMockChannel(channel).send.mockResolvedValue(newMessage);
 
           const guild = makeGuild([channel]);
-          guild.channels.fetch.mockResolvedValue(channel);
+          asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
           await updateDeadlineMessage(guild, 'channel123');
 
-          const sentContent = channel.send.mock.calls[0][0];
+          const sentContent = asMockChannel(channel).send.mock.calls[0]![0] as string;
           expect(sentContent).toContain('Assignment A');
           expect(sentContent).not.toContain('Assignment B');
         });
@@ -347,22 +346,20 @@ describe('reminderMessage', () => {
     describe('error handling', () => {
       it('returns false when channel is not found', async () => {
         const guild = makeGuild([]);
-        guild.channels.fetch.mockResolvedValue(null);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(null);
 
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         const result = await updateDeadlineMessage(guild, 'nonexistent');
 
         expect(result).toBe(false);
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Could not find reminder location channel'
-        );
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Could not find reminder location channel');
         consoleErrorSpy.mockRestore();
       });
 
       it('returns false and logs error when channel fetch fails', async () => {
         const guild = makeGuild([]);
-        guild.channels.fetch.mockRejectedValue(new Error('Network error'));
+        asMockGuild(guild).channels.fetch.mockRejectedValue(new Error('Network error'));
 
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -371,20 +368,20 @@ describe('reminderMessage', () => {
         expect(result).toBe(false);
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to update deadline message:',
-          'Network error'
+          expect.objectContaining({ message: 'Network error' })
         );
         consoleErrorSpy.mockRestore();
       });
 
       it('returns false when message send fails', async () => {
-        loadMessages.mockReturnValue({});
-        loadDeadlines.mockReturnValue([]);
+        vi.mocked(loadMessages).mockReturnValue({});
+        vi.mocked(loadDeadlines).mockReturnValue([]);
 
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockRejectedValue(new Error('Permission denied'));
+        asMockChannel(channel).send.mockRejectedValue(new Error('Permission denied'));
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -393,24 +390,24 @@ describe('reminderMessage', () => {
         expect(result).toBe(false);
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to update deadline message:',
-          'Permission denied'
+          expect.objectContaining({ message: 'Permission denied' })
         );
         consoleErrorSpy.mockRestore();
       });
 
       it('returns false when pin fails', async () => {
-        loadMessages.mockReturnValue({});
-        loadDeadlines.mockReturnValue([]);
+        vi.mocked(loadMessages).mockReturnValue({});
+        vi.mocked(loadDeadlines).mockReturnValue([]);
 
         const newMessage = {
           id: 'msg777',
           pin: vi.fn().mockRejectedValue(new Error('Pin limit reached'))
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -419,7 +416,7 @@ describe('reminderMessage', () => {
         expect(result).toBe(false);
         expect(consoleErrorSpy).toHaveBeenCalledWith(
           'Failed to update deadline message:',
-          'Pin limit reached'
+          expect.objectContaining({ message: 'Pin limit reached' })
         );
         consoleErrorSpy.mockRestore();
       });
@@ -427,14 +424,14 @@ describe('reminderMessage', () => {
 
     describe('edge cases', () => {
       it('handles deadlines with special characters in names', async () => {
-        loadMessages.mockReturnValue({});
-        loadDeadlines.mockReturnValue([
-          {
+        vi.mocked(loadMessages).mockReturnValue({});
+        vi.mocked(loadDeadlines).mockReturnValue([
+          makeDeadline({
             assignment: 'Quiz #2 (Part A&B)',
             courseChannelName: 'CS-101',
             dueDate: '2026-01-20T23:59:00.000Z',
             reminderLocationId: 'channel123'
-          }
+          })
         ]);
 
         const newMessage = {
@@ -442,29 +439,29 @@ describe('reminderMessage', () => {
           pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const result = await updateDeadlineMessage(guild, 'channel123');
 
         expect(result).toBe(true);
-        expect(channel.send).toHaveBeenCalledWith(
+        expect(asMockChannel(channel).send).toHaveBeenCalledWith(
           expect.stringContaining('Quiz #2 (Part A&B)')
         );
       });
 
       it('handles very long assignment names', async () => {
         const longName = 'A'.repeat(200);
-        loadMessages.mockReturnValue({});
-        loadDeadlines.mockReturnValue([
-          {
+        vi.mocked(loadMessages).mockReturnValue({});
+        vi.mocked(loadDeadlines).mockReturnValue([
+          makeDeadline({
             assignment: longName,
             courseChannelName: 'CS101',
             dueDate: '2026-01-20T23:59:00.000Z',
             reminderLocationId: 'channel123'
-          }
+          })
         ]);
 
         const newMessage = {
@@ -472,32 +469,32 @@ describe('reminderMessage', () => {
           pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         const result = await updateDeadlineMessage(guild, 'channel123');
 
         expect(result).toBe(true);
-        expect(channel.send).toHaveBeenCalledWith(
+        expect(asMockChannel(channel).send).toHaveBeenCalledWith(
           expect.stringContaining(longName)
         );
       });
 
       it('preserves existing message IDs when replacing deleted message', async () => {
-        loadMessages.mockReturnValue({ 'other-channel': 'msg-old' });
-        loadDeadlines.mockReturnValue([]);
+        vi.mocked(loadMessages).mockReturnValue({ 'other-channel': 'msg-old' });
+        vi.mocked(loadDeadlines).mockReturnValue([]);
 
         const newMessage = {
           id: 'msg-new',
           pin: vi.fn().mockResolvedValue(undefined)
         };
         const channel = makeChannel('channel123', 'due-dates');
-        channel.send.mockResolvedValue(newMessage);
+        asMockChannel(channel).send.mockResolvedValue(newMessage);
 
         const guild = makeGuild([channel]);
-        guild.channels.fetch.mockResolvedValue(channel);
+        asMockGuild(guild).channels.fetch.mockResolvedValue(channel);
 
         await updateDeadlineMessage(guild, 'channel123');
 

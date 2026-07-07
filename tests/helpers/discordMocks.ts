@@ -47,6 +47,7 @@ export const makeChannel = (
   name,
   type,
   parentId,
+  isTextBased: vi.fn(() => type === ChannelType.GuildText || type === ChannelType.GuildForum),
   threads: {
     create: vi.fn(),
     fetchActive: vi.fn(),
