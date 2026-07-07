@@ -1,12 +1,13 @@
 import { Client, Events } from "discord.js";
-import { loadCommands            } from "../handlers/commandHandler.js";
-import { setupInteractionHandler } from "../handlers/eventHandler.js";
-import { startCleanupJob         } from "../services/expirationCleanup.js";
-import { startReminderJob        } from "../services/reminderScheduler.js";
+import { loadCommands                                     } from "../handlers/commandHandler.js";
+import { setupInteractionHandler, setupGuildDeleteHandler } from "../handlers/eventHandler.js";
+import { startCleanupJob                                  } from "../services/expirationCleanup.js";
+import { startReminderJob                                 } from "../services/reminderScheduler.js";
 
 export async function setupBot(client: Client): Promise<void> {
   await loadCommands(client);
   setupInteractionHandler(client);
+  setupGuildDeleteHandler(client);
 
   client.once(Events.ClientReady, async (readyClient) => {
     console.log(`Logged in as ${readyClient.user.tag}`);
