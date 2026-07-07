@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
 import { getHoursUntilDeadline, shouldSendReminder, formatNormalReminder, formatLateReminder } from '../../src/services/reminderScheduler';
 import { now, fromISO, discordTimestamp } from '../../src/utils/time';
+import { makeDeadline } from '../helpers/interactions';
 
 vi.mock('../../src/utils/time');
 
 describe('reminderScheduler', () => {
   beforeEach(() => {
     const fixedNow = new Date('2026-01-20T12:00:00Z');
-    now.mockReturnValue(fixedNow);
-    fromISO.mockImplementation((isoString) => new Date(isoString));
-    discordTimestamp.mockImplementation((date, format) => {
+    vi.mocked(now).mockReturnValue(fixedNow);
+    vi.mocked(fromISO).mockImplementation((isoString) => new Date(isoString));
+    vi.mocked(discordTimestamp).mockImplementation((_date, format) => {
       if (format == 'R') return '<t:1737374400:R>';
       return '<t:1737374400:F>';
     });
@@ -117,16 +117,16 @@ describe('reminderScheduler', () => {
     });
   });
 
-describe('formatNormalReminder', () => {
+  describe('formatNormalReminder', () => {
     it('formats normal reminder correctly', () => {
-      const deadline = {
+      const deadline = makeDeadline({
         assignment: 'Homework 1',
         courseChannelName: 'programming-fundamentals',
         cohortId: '123456',
         dueDate: '2026-01-20T23:59:00Z'
-      };
+      });
 
-      const message = formatNormalReminder(deadline, '24h');
+      const message = formatNormalReminder(deadline);
 
       expect(message).toContain('<@&123456>');
       expect(message).toContain('Deadline Reminder');
@@ -137,12 +137,12 @@ describe('formatNormalReminder', () => {
 
   describe('formatLateReminder', () => {
     it('formats 24h late reminder correctly', () => {
-      const deadline = {
+      const deadline = makeDeadline({
         assignment: 'Homework 1',
         courseChannelName: 'programming-fundamentals',
         cohortId: '123456',
         dueDate: '2026-01-20T23:59:00Z'
-      };
+      });
 
       const message = formatLateReminder(deadline, '24h');
 
@@ -154,12 +154,12 @@ describe('formatNormalReminder', () => {
     });
 
     it('formats 8h late reminder correctly', () => {
-      const deadline = {
+      const deadline = makeDeadline({
         assignment: 'Test 2',
         courseChannelName: 'data-structures',
         cohortId: '789',
         dueDate: '2026-01-21T12:00:00Z'
-      };
+      });
 
       const message = formatLateReminder(deadline, '8h');
 
@@ -167,12 +167,12 @@ describe('formatNormalReminder', () => {
     });
 
     it('formats 1h late reminder correctly', () => {
-      const deadline = {
+      const deadline = makeDeadline({
         assignment: 'Quiz 3',
         courseChannelName: 'algorithms',
         cohortId: '999',
         dueDate: '2026-01-20T13:00:00Z'
-      };
+      });
 
       const message = formatLateReminder(deadline, '1h');
 
