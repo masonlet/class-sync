@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "deploy": "node deploy-commands.js",
-    "start": "node src/index.js",
+    "deploy": "node deploy-commands.ts",
+    "start": "node src/index.ts",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -19,6 +19,10 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^6.0.3",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "undici": "^6.27.0"
   }
 }
