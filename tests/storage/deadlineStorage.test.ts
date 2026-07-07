@@ -4,7 +4,9 @@ import { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseErr
 import { expectEmptyAndLoggedError } from '../helpers/assertions';
 
 import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
-import { getGuildDataPath } from '../../src/storage/utils';
+import { makeDeadline } from '../helpers/interactions';
+import type { Deadline } from '../../src/types';
+import { getGuildDataPath } from '../../src/storage/storageHelpers';
 
 describe('deadlineStorage', () => {
   const GUILD_ID = '123456789';
@@ -22,8 +24,7 @@ describe('deadlineStorage', () => {
         assignment: 'Quiz 1', 
         date: '2026-01-01' 
       }];
-      const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
-      mockFileExistsWithJson(deadlinesFile, mockDeadlines);
+      mockFileExistsWithJson(mockDeadlines);
       expect(loadDeadlines(GUILD_ID)).toEqual(mockDeadlines);
     }); 
 
@@ -52,25 +53,24 @@ describe('deadlineStorage', () => {
           date: '2026-01-01',
           extraField: 'preserved'
         }];
-        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
-        mockFileExistsWithJson(deadlinesFile, deadlines);
-        expect(loadDeadlines(GUILD_ID)[0].extraField).toBe('preserved');
+        mockFileExistsWithJson(deadlines);
+        const [first] = loadDeadlines(GUILD_ID) as (Deadline & { extraField: string })[];
+        expect(first!.extraField).toBe('preserved');
       });
 
       it('handles malformed deadline objects', () => {
-        const badDeadlines = [ 
+        const badDeadlines = [
           null,
           {},
           { courseChannelId: '1' },
           { courseChannelId: '2', cohortId: 'B', assignment: 'valid', date: '2026-01-01' }
         ];
-        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
-        mockFileExistsWithJson(deadlinesFile, badDeadlines);
+        mockFileExistsWithJson(badDeadlines);
         expect(loadDeadlines(GUILD_ID)).toHaveLength(4);
       });
 
       it('handles very large deadline arrays', () => {
-        const largeDeadlines = [];
+        const largeDeadlines: Record<string, string>[] = [];
         for (let i = 0; i < 5000; i++) {
           largeDeadlines.push({
             courseChannelId: `course${i}`,
@@ -79,8 +79,7 @@ describe('deadlineStorage', () => {
             date: `2026-01-01`  
           });
         }
-        const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
-        mockFileExistsWithJson(deadlinesFile, largeDeadlines);
+        mockFileExistsWithJson(largeDeadlines);
         expect(loadDeadlines(GUILD_ID)).toHaveLength(5000);
       });
     });
@@ -88,13 +87,10 @@ describe('deadlineStorage', () => {
 
   describe('saveDeadlines()', () => {
     it('writes deadlines to file with formatting', () => {
-      const deadlines = [{ 
-        courseChannelId: '1', 
-        cohortId: 'A', 
-        assignment: 'Quiz 1', 
-        date: '2026-12-12' 
-      }];
-     const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
+      const deadlines = [
+        makeDeadline({ courseChannelId: '1', cohortId: 'A', assignment: 'Quiz 1', dueDate: '2026-12-12' })
+      ];
+      const deadlinesFile = getGuildDataPath(GUILD_ID, 'deadlines.json');
       saveDeadlines(GUILD_ID, deadlines);
       expectWriteFormatted(deadlinesFile, deadlines);
     });
