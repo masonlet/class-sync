@@ -47,7 +47,8 @@
   "include": [
     "./src/**/*.ts",
     "./tests/**/*.ts",
-    "./deploy-commands.ts"
+    "./deploy-commands.ts",
+    "./vitest.config.ts"
   ],
   "exclude": [
     "dist/",
