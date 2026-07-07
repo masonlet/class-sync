@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterAll, type Mock } from 'vitest';
-import { makeHelperUser, makeAdminUser, makeRegularUser            } from '../helpers/interactions';
-import { hasPermission, denyPermission } from '../../src/utils/permissions';
-import { replyEphemeral                } from '../../src/utils/interactions';
+import { makeHelperUser, makeAdminUser, makeRegularUser } from '../helpers/interactions.js';
+import { hasPermission, denyPermission                  } from '../../src/utils/permissions.js';
+import { replyEphemeral                                 } from '../../src/utils/interactions.js';
 
 vi.mock('../../src/utils/interactions');
 

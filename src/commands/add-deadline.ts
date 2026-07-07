@@ -1,15 +1,15 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import { parseDate } from "chrono-node";
-import type { Deadline } from "../types/index";
-import { loadDeadlines, saveDeadlines } from "../storage/deadlineStorage";
-import { resolveChannel } from "../services/channels";
-import { getOrCreateReminderLocation } from "../services/reminderLocation";
-import { updateDeadlineMessage } from "../services/reminderMessage";
-import { extractCommandInputs, isValidChannel, checkRateLimit } from "../utils/commandHelpers";
-import { hasPermission, denyPermission } from "../utils/permissions";
-import { deferEphemeral, replyEphemeral } from "../utils/interactions";
-import { now, toISO, discordTimestamp } from "../utils/time";
-import { validateDeadlineTime } from "../utils/validation";
+import { parseDate                                        } from "chrono-node";
+import type { Deadline                                        } from "../types.js";
+import { loadDeadlines, saveDeadlines                         } from "../storage/deadlineStorage.js";
+import { resolveChannel                                       } from "../services/channels.js";
+import { getOrCreateReminderLocation                          } from "../services/reminderLocation.js";
+import { updateDeadlineMessage                                } from "../services/reminderMessage.js";
+import { extractCommandInputs, isValidChannel, checkRateLimit } from "../utils/commandHelpers.js";
+import { hasPermission, denyPermission                        } from "../utils/permissions.js";
+import { deferEphemeral, replyEphemeral                       } from "../utils/interactions.js";
+import { now, toISO, discordTimestamp                         } from "../utils/time.js";
+import { validateDeadlineTime                                 } from "../utils/validation.js";
 
 export const name = "add-deadline";
 
@@ -39,13 +39,11 @@ export async function handle(
 ): Promise<void> {
   await deferEphemeral(interaction);
 
+  if (!hasPermission(interaction)) return denyPermission(interaction);
+  if (!interaction.inCachedGuild()) return replyEphemeral(interaction, "This command must be used in a server.");
+
   const rateLimitValid = await checkRateLimit(interaction);
   if (!rateLimitValid) return;
-
-  if (!hasPermission(interaction)) return denyPermission(interaction);
-  if (!interaction.inCachedGuild()) return replyEphemeral(
-    interaction, "This command must be used in a server."
-  );
 
   const { course, cohort, assignment, date } = extractCommandInputs(interaction);
 

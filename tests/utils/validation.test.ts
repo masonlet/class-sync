@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { validateDeadlineTime } from '../../src/utils/validation';
-import { now                  } from '../../src/utils/time';
+import { validateDeadlineTime } from '../../src/utils/validation.js';
+import { now                  } from '../../src/utils/time.js';
 
 vi.mock('../../src/utils/time');
 

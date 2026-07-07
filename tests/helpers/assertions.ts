@@ -1,5 +1,3 @@
-// Shared expectation helpers for common patterns
-
 import { expect, vi } from "vitest";
 
 export const expectIgnoreErrorCode = async (

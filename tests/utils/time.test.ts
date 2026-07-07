@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-
-import { now, toISO, fromISO, discordTimestamp } from '../../src/utils/time';
+import { now, toISO, fromISO, discordTimestamp } from '../../src/utils/time.js';
 
 describe('time utilities', () => {
   describe('now()', () => {

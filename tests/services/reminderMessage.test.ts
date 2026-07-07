@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { asMockChannel, asMockGuild, makeChannel, makeGuild } from '../helpers/discordMocks';
-import { updateDeadlineMessage } from '../../src/services/reminderMessage';
-import { loadDeadlines } from '../../src/storage/deadlineStorage';
-import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
-import { fromISO, discordTimestamp } from '../../src/utils/time';
-import { makeDeadline } from '../helpers/interactions';
+import { asMockChannel, asMockGuild, makeChannel, makeGuild } from '../helpers/discordMocks.js';
+import { updateDeadlineMessage                              } from '../../src/services/reminderMessage.js';
+import { loadDeadlines                                      } from '../../src/storage/deadlineStorage.js';
+import { loadMessages, saveMessages                         } from '../../src/storage/messageStorage.js';
+import { fromISO, discordTimestamp                          } from '../../src/utils/time.js';
+import { makeDeadline                                       } from '../helpers/interactions.js';
 
 vi.mock('../../src/storage/deadlineStorage');
 vi.mock('../../src/storage/messageStorage');

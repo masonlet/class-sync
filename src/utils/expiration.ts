@@ -1,12 +1,9 @@
-import { fromISO, now } from "./time";
-import type { Deadline } from "../types"
+import { fromISO, now  } from "./time.js";
+import type { Deadline } from "../types.js"
 
 export function isDeadlineExpired(deadline: Deadline): boolean {
-  if (!deadline || !deadline.dueDate)
-    return false;
-
-  const dueDate = fromISO(deadline.dueDate);
-  return now() >= dueDate;
+  if (!deadline || !deadline.dueDate) return false;
+  return now() >= fromISO(deadline.dueDate);
 }
 
 export function getActiveDeadlines(deadlines: Deadline[]): Deadline[] {

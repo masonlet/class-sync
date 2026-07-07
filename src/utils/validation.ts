@@ -1,5 +1,5 @@
-import { now } from "./time";
-import type { ValidationResult } from "../types";
+import { now                   } from "./time.js";
+import type { ValidationResult } from "../types.js";
 
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 

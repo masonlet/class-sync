@@ -1,8 +1,6 @@
-import { ChannelType } from "discord.js";
-import type { Guild, ThreadChannel } from "discord.js";
-import type { Channel } from "../../src/types";
-import { vi } from "vitest";
-import type { Mock } from "vitest";
+import { ChannelType, type Guild, type ThreadChannel } from "discord.js";
+import type { Channel } from "../../src/types.js";
+import { vi, type Mock } from "vitest";
 
 export type MockChannelInternals = {
   threads: { create: Mock; fetchActive: Mock };

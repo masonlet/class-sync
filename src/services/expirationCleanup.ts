@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
-import { getActiveDeadlines } from "../utils/expiration";
-import { loadDeadlines, saveDeadlines } from "../storage/deadlineStorage";
+import { getActiveDeadlines           } from "../utils/expiration.js";
+import { loadDeadlines, saveDeadlines } from "../storage/deadlineStorage.js";
 
 let cleanupInterval: NodeJS.Timeout | null = null;
 
@@ -38,10 +38,7 @@ function startInterval(client: Client, intervalMinutes: number) {
   }, intervalMs);
 }
 
-export function startCleanupJob(
-  client: Client | null | undefined,
-  intervalMinutes: number = 15
-): void {
+export function startCleanupJob(client: Client | null | undefined, intervalMinutes: number = 15): void {
   if (cleanupInterval) {
     console.log('Cleanup job already running');
     return;

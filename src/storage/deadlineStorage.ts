@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { getGuildDataPath, ensureGuildDir } from "./storageHelpers";
-import type { Deadline } from "../types";
+import { getGuildDataPath, ensureGuildDir } from "./storageHelpers.js";
+import type { Deadline                    } from "../types.js";
 
 export function loadDeadlines(guildId: string): Deadline[] {
   try {

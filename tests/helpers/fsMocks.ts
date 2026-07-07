@@ -1,5 +1,3 @@
-// Centralized fs mocking for storage tests
-
 import { expect, vi } from "vitest";
 import * as fs from "fs";
 

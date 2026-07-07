@@ -1,5 +1,5 @@
-const DEFAULT_MAX_USES = 5;
-const DEFAULT_WINDOW_MS = 10000;
+const DEFAULT_MAX_USES    = 5;
+const DEFAULT_WINDOW_MS   = 10000;
 const CLEANUP_INTERVAL_MS = 60000;
 
 const cooldowns = new Map<string, { count: number; resetTime: number }>();

@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChannelType } from 'discord.js';
-import { MockCollection, makeChannel, makeThread, makeGuild, asMockChannel, asMockThread, asMockGuild } from '../helpers/discordMocks';
-import { getOrCreateReminderLocation } from '../../src/services/reminderLocation';
-import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
+import {
+  MockCollection, makeChannel, makeThread, makeGuild,
+  asMockChannel, asMockThread, asMockGuild
+} from '../helpers/discordMocks.js';
+import { getOrCreateReminderLocation } from '../../src/services/reminderLocation.js';
+import { loadMessages, saveMessages  } from '../../src/storage/messageStorage.js';
 
 vi.mock('../../src/storage/messageStorage');
 

@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-import { mockFs, resetMocks, mockFileExistsWithJson, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } from '../helpers/fsMocks';
-import { expectEmptyAndLoggedError } from '../helpers/assertions';
-
-import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
-import { makeDeadline } from '../helpers/interactions';
-import type { Deadline } from '../../src/types';
-import { getGuildDataPath } from '../../src/storage/storageHelpers';
+import {
+  mockFs,
+  resetMocks,
+  mockFileExistsWithJson,
+  mockReadError,
+  mockParseError,
+  mockWriteError,
+  expectWriteFormatted
+} from '../helpers/fsMocks.js';
+import { expectEmptyAndLoggedError    } from '../helpers/assertions.js';
+import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage.js';
+import { makeDeadline                 } from '../helpers/interactions.js';
+import type { Deadline                } from '../../src/types.js';
+import { getGuildDataPath             } from '../../src/storage/storageHelpers.js';
 
 describe('deadlineStorage', () => {
   const GUILD_ID = '123456789';

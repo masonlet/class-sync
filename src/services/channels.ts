@@ -1,10 +1,10 @@
 import {
+  type GuildBasedChannel,
+  type Snowflake,
   ChannelType,
   Collection,
   ForumChannel,
   Guild,
-  type GuildBasedChannel,
-  type Snowflake,
   TextChannel
 } from 'discord.js';
 

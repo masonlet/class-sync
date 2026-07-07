@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach      } from 'vitest';
-import { isLimited, getRemainingTime, resetCooldowns, cleanup } from '../../src/utils/ratelimiter';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { isLimited, getRemainingTime, resetCooldowns, cleanup } from '../../src/utils/ratelimiter.js';
 
 describe('rateLimiter', () => {
   beforeEach(() => {

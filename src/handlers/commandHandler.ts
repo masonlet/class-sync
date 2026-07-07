@@ -1,48 +1,32 @@
-import fs from "node:fs";
-import path from "node:path";
-import { pathToFileURL, fileURLToPath } from "node:url";
-import { Client } from "discord.js";
-import type { Command } from "../types";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs                from "node:fs";
+import path              from "node:path";
+import { pathToFileURL } from "node:url";
+import { Client       } from "discord.js";
+import type { Command } from "../types.js";
 
 function getCommandFiles(commandsPath: string): string[] {
   return fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 }
 
-export function validateCommand(
-  command: unknown,
-  filePath: string
-): asserts command is Command {
-  if (!command || typeof command !== 'object') throw new Error(
-    `Invalid command module: ${filePath}`
-  );
+export function validateCommand(command: unknown, filePath: string): asserts command is Command {
+  if (!command || typeof command !== 'object') throw new Error(`Invalid command module: ${filePath}`);
 
-   const c = command as Partial<Command>;
-
-  if (!c.name) throw new Error(`Command missing name: ${filePath}`);
-  if (!c.data) throw new Error(`Command missing data: ${filePath}`);
-
-  if (typeof c.handle !== 'function') throw new Error(
-    `Command missing handle(): ${filePath}`
-  );
+  const c = command as Partial<Command>;
+  if (!c.name)                        throw new Error(`Command missing name: ${filePath}`);
+  if (!c.data)                        throw new Error(`Command missing data: ${filePath}`);
+  if (typeof c.handle !== 'function') throw new Error(`Command missing handle(): ${filePath}`);
 }
 
 async function loadCommand(filePath: string): Promise<Command> {
-  const url = pathToFileURL(filePath).href;
-
-  const mod = await import(url);
+  const url     = pathToFileURL(filePath).href;
+  const mod     = await import(url);
   const command = mod.default ?? mod;
-
   validateCommand(command, filePath);
   return command;
 }
 
-export async function loadCommands(
-  client: Client | null | undefined
-): Promise<Command['data'][]> {
-  const commandsPath = path.join(__dirname, '..', 'commands');
+export async function loadCommands(client: Client | null | undefined): Promise<Command['data'][]> {
+  const commandsPath = path.join(import.meta.dirname, '..', 'commands');
   const commandFiles = getCommandFiles(commandsPath);
   const commandData: Command['data'][] = [];
 

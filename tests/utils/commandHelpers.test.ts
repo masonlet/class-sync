@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { makeInteraction, makeCommandOptions, makeDeadline } from '../helpers/interactions';
-import { extractCommandInputs, isValidChannel, isValidChannelFilter, findDeadline } from '../../src/utils/commandHelpers';
-import type { Channel } from '../../src/types';
-import type { Role } from 'discord.js';
+import type { Role            } from 'discord.js';
+import { makeInteraction, makeCommandOptions, makeDeadline } from '../helpers/interactions.js';
+import type { Channel                                      } from '../../src/types.js';
+import {
+  extractCommandInputs,
+  isValidChannel,
+  isValidChannelFilter,
+  findDeadline
+} from '../../src/utils/commandHelpers.js';
 
 const asChannel = (value: unknown): Channel => value as Channel;
 const asRole = (value: unknown): Role => value as Role;

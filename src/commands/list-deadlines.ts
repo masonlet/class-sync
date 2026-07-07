@@ -1,10 +1,10 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import { loadDeadlines } from "../storage/deadlineStorage";
-import { resolveChannel } from "../services/channels";
-import { deferEphemeral, replyEphemeral } from "../utils/interactions";
-import { fromISO, discordTimestamp } from "../utils/time";
-import { isValidChannelFilter, checkRateLimit } from "../utils/commandHelpers";
-import { getActiveDeadlines } from "../utils/expiration";
+import { loadDeadlines                        } from "../storage/deadlineStorage.js";
+import { resolveChannel                       } from "../services/channels.js";
+import { deferEphemeral, replyEphemeral       } from "../utils/interactions.js";
+import { fromISO, discordTimestamp            } from "../utils/time.js";
+import { isValidChannelFilter, checkRateLimit } from "../utils/commandHelpers.js";
+import { getActiveDeadlines                   } from "../utils/expiration.js";
 
 export const name = "list-deadlines";
 
@@ -21,24 +21,18 @@ export const data = new SlashCommandBuilder()
   )
   .toJSON();
 
-export async function handle(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handle(interaction: ChatInputCommandInteraction): Promise<void> {
   await deferEphemeral(interaction);
+
+  if (!interaction.inCachedGuild()) return replyEphemeral(interaction, "This command must be used in a server.");
 
   const rateLimitValid = await checkRateLimit(interaction);
   if (!rateLimitValid) return;
 
-  if (!interaction.inCachedGuild())
-    return replyEphemeral(interaction, "This command must be used in a server.");
-
-  const courseFilter = interaction.options.getString("course");
-  const cohortFilter = interaction.options.getRole("cohort");
-
   let deadlines = loadDeadlines(interaction.guildId);
-
   deadlines = getActiveDeadlines(deadlines);
 
+  const courseFilter = interaction.options.getString("course");
   if (courseFilter) {
     const channel = resolveChannel(interaction.guild, courseFilter);
     if (!isValidChannelFilter(channel))
@@ -47,6 +41,7 @@ export async function handle(
     if (channel) deadlines = deadlines.filter(d => d.courseChannelId === channel.id);
   }
 
+  const cohortFilter = interaction.options.getRole("cohort");
   if (cohortFilter) deadlines = deadlines.filter(d => d.cohortId === cohortFilter.id);
 
   if (deadlines.length === 0) return replyEphemeral(interaction, "No deadlines found.");

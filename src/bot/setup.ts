@@ -1,8 +1,8 @@
 import { Client, Events } from "discord.js";
-import { loadCommands } from "../handlers/commandHandler";
-import { setupInteractionHandler } from "../handlers/eventHandler";
-import { startCleanupJob } from "../services/expirationCleanup";
-import { startReminderJob } from "../services/reminderScheduler";
+import { loadCommands            } from "../handlers/commandHandler.js";
+import { setupInteractionHandler } from "../handlers/eventHandler.js";
+import { startCleanupJob         } from "../services/expirationCleanup.js";
+import { startReminderJob        } from "../services/reminderScheduler.js";
 
 export async function setupBot(client: Client): Promise<void> {
   await loadCommands(client);

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { getGuildDataPath, ensureGuildDir } from "./storageHelpers";
+import { getGuildDataPath, ensureGuildDir } from "./storageHelpers.js";
 
 export type MessageTracking = Record<string, string>;
 

@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup';
-import { loadDeadlines, saveDeadlines } from '../../src/storage/deadlineStorage';
-import { getActiveDeadlines } from '../../src/utils/expiration';
-import type { MockInstance } from 'vitest';
-import type { Client } from 'discord.js';
-import type { Deadline } from '../../src/types';
-import { makeDeadline } from '../helpers/interactions';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
+import type { Client                                                        } from 'discord.js';
+import { cleanupExpiredDeadlines, startCleanupJob, stopCleanupJob } from '../../src/services/expirationCleanup.js';
+import { loadDeadlines, saveDeadlines                             } from '../../src/storage/deadlineStorage.js';
+import { getActiveDeadlines                                       } from '../../src/utils/expiration.js';
+import type { Deadline                                            } from '../../src/types.js';
+import { makeDeadline                                             } from '../helpers/interactions.js';
 
 vi.mock('../../src/storage/deadlineStorage', () => ({
   loadDeadlines: vi.fn(),

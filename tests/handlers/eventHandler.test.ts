@@ -1,4 +1,4 @@
-import { handleCommandInteraction } from '../../src/handlers/eventHandler';
+import { handleCommandInteraction } from '../../src/handlers/eventHandler.js';
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock, type MockInstance } from 'vitest';
 import type { Client, Interaction } from 'discord.js';
 

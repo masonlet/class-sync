@@ -1,11 +1,10 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-
-import { hasPermission, denyPermission } from "../utils/permissions";
-import { deferEphemeral, replyEphemeral } from "../utils/interactions";
-import { checkRateLimit } from "../utils/commandHelpers";
-import { loadDeadlines, saveDeadlines } from "../storage/deadlineStorage";
-import { updateDeadlineMessage } from "../services/reminderMessage";
-import { resolveChannel } from "../services/channels";
+import { hasPermission, denyPermission  } from "../utils/permissions.js";
+import { deferEphemeral, replyEphemeral } from "../utils/interactions.js";
+import { checkRateLimit                 } from "../utils/commandHelpers.js";
+import { loadDeadlines, saveDeadlines   } from "../storage/deadlineStorage.js";
+import { updateDeadlineMessage          } from "../services/reminderMessage.js";
+import { resolveChannel                 } from "../services/channels.js";
 
 export const name = "remove-deadline";
 
@@ -26,18 +25,14 @@ export const data = new SlashCommandBuilder()
   )
   .toJSON();
 
-export async function handle(
-  interaction: ChatInputCommandInteraction
-): Promise<void> {
+export async function handle(interaction: ChatInputCommandInteraction): Promise<void> {
   await deferEphemeral(interaction);
+
+  if (!hasPermission(interaction)) return denyPermission(interaction);
+  if (!interaction.inCachedGuild()) return replyEphemeral(interaction, "This command must be used in a server.");
 
   const rateLimitValid = await checkRateLimit(interaction);
   if (!rateLimitValid) return;
-
-  if (!hasPermission(interaction)) return denyPermission(interaction);
-
- if (!interaction.inCachedGuild())
-   return replyEphemeral(interaction, "This command must be used in a server.");
 
   const course = interaction.options.getString("course", true);
   const channel = resolveChannel(interaction.guild, course);

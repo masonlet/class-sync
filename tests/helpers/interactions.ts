@@ -1,8 +1,6 @@
-// Discord interaction factories for command/interaction/permission tests
-
 import { vi } from "vitest";
 import type { ChatInputCommandInteraction, Role, APIRole } from "discord.js";
-import type { Deadline } from "../../src/types";
+import type { Deadline } from "../../src/types.js";
 
 type InteractionOverrides = {
   options?: Record<string, unknown>;

@@ -1,13 +1,13 @@
 import {
+  type GuildBasedChannel,
   ChannelType,
   ForumChannel,
   Guild,
-  type GuildBasedChannel,
   TextChannel,
   ThreadChannel
 } from "discord.js";
-import { isForumChannel, isTextChannel } from "./channels";
-import { loadMessages, saveMessages } from "../storage/messageStorage";
+import { isForumChannel, isTextChannel } from "./channels.js";
+import { loadMessages, saveMessages    } from "../storage/messageStorage.js";
 
 async function createForumThread(courseChannel: ForumChannel): Promise<ThreadChannel> {
   return await courseChannel.threads.create({

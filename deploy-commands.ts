@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { REST, Routes } from "discord.js";
-import { loadCommands } from "./src/handlers/commandHandler";
+import { loadCommands } from "./src/handlers/commandHandler.js";
 
 const token = process.env["DISCORD_TOKEN"];
 const clientId = process.env["CLIENT_ID"];

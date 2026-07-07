@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { ChannelType } from 'discord.js';
-import { makeChannel, makeGuild } from '../helpers/discordMocks';
-import { resolveChannel, isForumChannel, isTextChannel } from '../../src/services/channels';
-import type { Channel } from '../../src/types';
+import { ChannelType          } from 'discord.js';
+import { makeChannel, makeGuild                        } from '../helpers/discordMocks.js';
+import { resolveChannel, isForumChannel, isTextChannel } from '../../src/services/channels.js';
+import type { Channel                                  } from '../../src/types.js';
 
 describe('channels', () => {
   describe('resolveChannel()', () => {

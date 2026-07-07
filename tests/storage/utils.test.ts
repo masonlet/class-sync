@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { existsSync, mkdirSync                } from 'fs';
 import { join                                 } from 'path';
-import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/storageHelpers';
+import { getGuildDataPath, ensureGuildDir, DATA_DIR } from '../../src/storage/storageHelpers.js';
 
 vi.mock('fs');
 

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Deadline } from '../../src/types';
-import { now, fromISO } from '../../src/utils/time';
-import { makeDeadline } from '../helpers/interactions';
-import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration';
+import type { Deadline                                              } from '../../src/types.js';
+import { now, fromISO                                               } from '../../src/utils/time.js';
+import { makeDeadline                                               } from '../helpers/interactions.js';
+import { isDeadlineExpired, getActiveDeadlines, getExpiredDeadlines } from '../../src/utils/expiration.js';
 
 vi.mock('../../src/utils/time');
 

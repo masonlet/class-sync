@@ -1,8 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mockFs, resetMocks, mockFileExistsWithJson, mockFileMissing, mockReadError, mockParseError, mockWriteError, expectWriteFormatted } from '../helpers/fsMocks';
-import { expectEmptyAndLoggedError } from '../helpers/assertions';
-import { loadMessages, saveMessages } from '../../src/storage/messageStorage';
-import { getGuildDataPath } from '../../src/storage/storageHelpers';
+import {
+  mockFs,
+  resetMocks,
+  mockFileExistsWithJson,
+  mockFileMissing,
+  mockReadError,
+  mockParseError,
+  mockWriteError,
+  expectWriteFormatted
+} from '../helpers/fsMocks.js';
+import { expectEmptyAndLoggedError  } from '../helpers/assertions.js';
+import { loadMessages, saveMessages } from '../../src/storage/messageStorage.js';
+import { getGuildDataPath           } from '../../src/storage/storageHelpers.js';
 
 describe('messageStorage', () => {
   const GUILD_ID = '123456789';

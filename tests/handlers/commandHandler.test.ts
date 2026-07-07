@@ -1,4 +1,4 @@
-import { validateCommand } from '../../src/handlers/commandHandler';
+import { validateCommand } from '../../src/handlers/commandHandler.js';
 import { describe, it, expect, vi } from 'vitest';
 
 describe('validateCommand', () => {

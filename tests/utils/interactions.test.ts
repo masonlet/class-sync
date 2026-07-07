@@ -1,8 +1,8 @@
 import { vi, describe, it, expect } from 'vitest';
-import { MessageFlags         } from 'discord.js';
-import { makeInteraction                } from '../helpers/interactions';
-import { expectIgnoreErrorCode          } from '../helpers/assertions';
-import { deferEphemeral, replyEphemeral } from '../../src/utils/interactions';
+import { MessageFlags             } from 'discord.js';
+import { makeInteraction                } from '../helpers/interactions.js';
+import { expectIgnoreErrorCode          } from '../helpers/assertions.js';
+import { deferEphemeral, replyEphemeral } from '../../src/utils/interactions.js';
 
 describe('interactions', () => {
   describe('deferEphemeral()', () => {

@@ -1,9 +1,9 @@
 import { Guild, type GuildTextBasedChannel } from "discord.js";
-import type { Deadline } from "../types";
-import { loadDeadlines } from "../storage/deadlineStorage";
-import { loadMessages, saveMessages, type MessageTracking } from "../storage/messageStorage";
-import { fromISO, discordTimestamp } from "../utils/time";
-import { getActiveDeadlines } from "../utils/expiration";
+import type { Deadline                                    } from "../types.js";
+import { loadDeadlines                                    } from "../storage/deadlineStorage.js";
+import { loadMessages, saveMessages, type MessageTracking } from "../storage/messageStorage.js";
+import { fromISO, discordTimestamp                        } from "../utils/time.js";
+import { getActiveDeadlines                               } from "../utils/expiration.js";
 
 function sortDeadlinesByDate(deadlines: Deadline[]): Deadline[] {
   return deadlines.sort(

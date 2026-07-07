@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getHoursUntilDeadline, shouldSendReminder, formatNormalReminder, formatLateReminder } from '../../src/services/reminderScheduler';
-import { now, fromISO, discordTimestamp } from '../../src/utils/time';
-import { makeDeadline } from '../helpers/interactions';
+import {
+  getHoursUntilDeadline,
+  shouldSendReminder,
+  formatNormalReminder,
+  formatLateReminder
+} from '../../src/services/reminderScheduler.js';
+import { now, fromISO, discordTimestamp } from '../../src/utils/time.js';
+import { makeDeadline                   } from '../helpers/interactions.js';
 
 vi.mock('../../src/utils/time');
 
