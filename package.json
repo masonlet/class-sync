@@ -5,6 +5,7 @@
   "main": "dist/src/index.js",
   "type": "module",
   "scripts": {
+    "typecheck": "tsc",
     "build": "tsc -p tsconfig.build.json",
     "deploy": "npm run build && node dist/deploy-commands.js",
     "start": "npm run build && node dist/src/index.js",
